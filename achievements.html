@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中国地图交互式问答 - 成就系统</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* 成就界面样式 */
+    .achievements-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      padding: 20px;
+    }
+    
+    .achievements-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .achievements-header h1 {
+      font-size: clamp(36px, 8vw, 72px);
+      font-weight: bold;
+      color: #c8102e;
+      text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+      font-family: "黄山毛峰书法体", serif;
+      letter-spacing: clamp(4px, 2vw, 16px);
+      margin-bottom: 20px;
+    }
+    
+    .achievements-header h2 {
+      font-size: 28px;
+      color: #333;
+      margin-bottom: 10px;
+    }
+    
+    .achievements-content {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      max-width: 900px;
+      width: 100%;
+    }
+    
+    .achievement-section {
+      margin-bottom: 30px;
+    }
+    
+    .achievement-section h3 {
+      font-size: 20px;
+      font-weight: bold;
+      color: #c8102e;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #eee;
+    }
+    
+    .achievement-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    
+    .achievement-card {
+      background: #f5f7fa;
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+      border: 2px solid #e4e7ed;
+    }
+    
+    .achievement-card.achieved {
+      background: #ecf5ff;
+      border-color: #409eff;
+      box-shadow: 0 0 15px rgba(64, 158, 255, 0.3);
+    }
+    
+    .achievement-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+    
+    .achievement-card.achieved .achievement-icon {
+      color: #409eff;
+    }
+    
+    .achievement-card:not(.achieved) .achievement-icon {
+      color: #c0c4cc;
+    }
+    
+    .achievement-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    
+    .achievement-card.achieved .achievement-title {
+      color: #409eff;
+    }
+    
+    .achievement-card:not(.achieved) .achievement-title {
+      color: #909399;
+    }
+    
+    .achievement-desc {
+      font-size: 14px;
+      color: #606266;
+      line-height: 1.4;
+    }
+    
+    .back-btn {
+      margin-top: 40px;
+      padding: 12px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #606266;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .back-btn:hover {
+      background: #4e5969;
+    }
+    
+    @media screen and (max-width: 768px) {
+      .achievements-content {
+        padding: 20px;
+      }
+      
+      .achievement-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="achievements-page">
+    <div class="achievements-header">
+      <h2>🏆 成就系统</h2>
+    </div>
+    
+    <div class="achievements-content">
+      <!-- 拼图模式成就 -->
+      <div class="achievement-section">
+        <h3>拼图模式成就</h3>
+        <div class="achievement-grid">
+          <div class="achievement-card" id="puzzle-beginner">
+            <div class="achievement-icon">🌱</div>
+            <div class="achievement-title">初级地理学家</div>
+            <div class="achievement-desc">答对10题</div>
+          </div>
+          <div class="achievement-card" id="puzzle-intermediate">
+            <div class="achievement-icon">🌿</div>
+            <div class="achievement-title">中级地理学家</div>
+            <div class="achievement-desc">答对20题</div>
+          </div>
+          <div class="achievement-card" id="puzzle-expert">
+            <div class="achievement-icon">🌳</div>
+            <div class="achievement-title">高级地理学家</div>
+            <div class="achievement-desc">全部答对</div>
+          </div>
+          <div class="achievement-card" id="puzzle-speed">
+            <div class="achievement-icon">⚡</div>
+            <div class="achievement-title">拼图速度大师</div>
+            <div class="achievement-desc">3分钟内完成</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 挑战模式成就 -->
+      <div class="achievement-section">
+        <h3>挑战模式成就</h3>
+        <div class="achievement-grid">
+          <div class="achievement-card" id="quiz-beginner">
+            <div class="achievement-icon">🌟</div>
+            <div class="achievement-title">初级地理学家</div>
+            <div class="achievement-desc">连续答对5题</div>
+          </div>
+          <div class="achievement-card" id="quiz-intermediate">
+            <div class="achievement-icon">⭐</div>
+            <div class="achievement-title">中级地理学家</div>
+            <div class="achievement-desc">连续答对10题</div>
+          </div>
+          <div class="achievement-card" id="quiz-expert">
+            <div class="achievement-icon">💎</div>
+            <div class="achievement-title">高级地理学家</div>
+            <div class="achievement-desc">全部答对</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <button class="back-btn" onclick="window.location.href='index.html'">返回主页</button>
+  </div>
+  
+  <script>
+    // 加载成就状态
+    function loadAchievements() {
+      // 从localStorage加载成就
+      const achievements = JSON.parse(localStorage.getItem('mapQuizAchievements') || '{}');
+      
+      // 更新成就卡片状态
+      Object.keys(achievements).forEach(key => {
+        if (achievements[key]) {
+          const card = document.getElementById(key);
+          if (card) {
+            card.classList.add('achieved');
+          }
+        }
+      });
+    }
+    
+    // 页面加载时加载成就
+    window.addEventListener('DOMContentLoaded', loadAchievements);
+  </script>
+
+  <script>
+    // 禁用 F12
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+        alert('开发者工具已禁用');
+      }
+    });
+
+    // 禁用右键菜单
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      alert('右键菜单已禁用');
+    });
+  </script>
+</body>
+</html>

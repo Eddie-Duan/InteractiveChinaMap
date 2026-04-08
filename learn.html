@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中国省份交互式问答 - 学习模式</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* 模式标题和退出按钮 */
+    .mode-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .mode-title {
+      font-size: 28px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .exit-btn {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #606266;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .exit-btn:hover {
+      background: #4e5969;
+    }
+    
+    /* 学习模式特有样式 */
+    .province:hover {
+      fill: #409eff;
+      stroke: #333;
+      stroke-width: 1.2;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 模式标题和退出按钮 -->
+    <div class="mode-header">
+      <h2 class="mode-title">学习模式</h2>
+      <button class="exit-btn" onclick="window.location.href='index.html'">退出模式</button>
+    </div>
+
+    <!-- 主体布局：左-中-右 -->
+    <div class="main-content">
+      <!-- 左侧：省份介绍 -->
+      <div class="left-panel">
+        <h3>省份介绍</h3>
+        <div id="wikiContent" class="wiki-content">
+          <div class="empty-tip">点击地图上的省份<br>查看详细介绍</div>
+        </div>
+      </div>
+
+      <!-- 中间:地图容器 -->
+      <div class="map-container" id="mapContainer">
+      </div>
+
+      <!-- 右侧：操作说明 -->
+      <div class="right-panel">
+        <!-- 地图控制按钮 -->
+        <div class="map-controls">
+          
+          <div class="direction-controls">
+            <div class="horizontal-controls">
+              <button id="zoomIn" class="control-btn">+</button>
+              <button id="zoomOut" class="control-btn">-</button>
+            </div>
+            <div class="horizontal-controls">
+              <button id="moveUp" class="control-btn">↑</button> 
+              <button id="moveDown" class="control-btn">↓</button>
+            </div>
+            <div class="horizontal-controls">
+              <button id="moveLeft" class="control-btn">←</button>
+              <button id="moveRight" class="control-btn">→</button>
+            </div>
+          </div>
+        </div>
+        <div class="error-count">
+          <button id="resetBtn" class="reset-btn" style="width: 100%; margin-top: 10px;">重置</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部中间图片容器 -->
+    <div class="bottom-img-container">
+      <img src="images/china.jpg" alt="中国一点也不能少" class="china-img">
+    </div>
+  </div>
+
+  <script src="js/script.js"></script>
+  <script>
+    // 学习模式特定逻辑
+    document.addEventListener('DOMContentLoaded', function() {
+      loadMap();
+      
+      // 点击地图省份显示介绍
+      const mapContainer = document.getElementById('mapContainer');
+      mapContainer.addEventListener('click', function(e) {
+        const provincePath = e.target.closest('.province');
+        if (provincePath) {
+          const provinceName = Object.keys(provinceMap).find(key => provinceMap[key] === provincePath.id);
+          if (provinceName) {
+            // 移除其他省份的active类
+            document.querySelectorAll('.province').forEach(path => {
+              path.classList.remove('active');
+            });
+            // 添加当前省份的active类
+            provincePath.classList.add('active');
+            // 显示省份介绍
+            showProvinceIntro(provinceName);
+          }
+        }
+      });
+      
+      // 鼠标悬停效果
+      mapContainer.addEventListener('mouseover', function(e) {
+        const provincePath = e.target.closest('.province');
+        if (provincePath) {
+          provincePath.style.fill = '#409eff';
+          provincePath.style.stroke = '#333';
+          provincePath.style.strokeWidth = '1.2';
+        }
+      });
+      
+      mapContainer.addEventListener('mouseout', function(e) {
+        const provincePath = e.target.closest('.province');
+        if (provincePath) {
+          if (!provincePath.classList.contains('active')) {
+            provincePath.style.fill = '#cccccc';
+            provincePath.style.stroke = '#999';
+            provincePath.style.strokeWidth = '0.8';
+          }
+        }
+      });
+      
+      // 绑定缩放按钮事件
+      const zoomInBtn = document.getElementById('zoomIn');
+      const zoomOutBtn = document.getElementById('zoomOut');
+      if (zoomInBtn) zoomInBtn.addEventListener('click', zoomIn);
+      if (zoomOutBtn) zoomOutBtn.addEventListener('click', zoomOut);
+      
+      // 绑定方向按钮事件
+      const moveUpBtn = document.getElementById('moveUp');
+      const moveDownBtn = document.getElementById('moveDown');
+      const moveLeftBtn = document.getElementById('moveLeft');
+      const moveRightBtn = document.getElementById('moveRight');
+      
+      if (moveUpBtn) moveUpBtn.addEventListener('click', () => moveMap(0, -moveStep));
+      if (moveDownBtn) moveDownBtn.addEventListener('click', () => moveMap(0, moveStep));
+      if (moveLeftBtn) moveLeftBtn.addEventListener('click', () => moveMap(-moveStep, 0));
+      if (moveRightBtn) moveRightBtn.addEventListener('click', () => moveMap(moveStep, 0));
+      
+      // 重置按钮事件
+      document.getElementById('resetBtn').addEventListener('click', function() {
+        // 移除所有省份的active类
+        document.querySelectorAll('.province').forEach(path => {
+          path.classList.remove('active');
+          path.style.fill = '#cccccc';
+          path.style.stroke = '#999';
+          path.style.strokeWidth = '0.8';
+        });
+        // 清空介绍
+        document.getElementById('wikiContent').innerHTML = '<div class="empty-tip">鼠标悬停或点击地图上的省份<br>查看详细介绍</div>';
+      });
+    });
+  </script>
+
+  <script>
+    // 禁用 F12
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+        alert('开发者工具已禁用');
+      }
+    });
+
+    // 禁用右键菜单
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      alert('右键菜单已禁用');
+    });
+  </script>
+</body>
+</html>

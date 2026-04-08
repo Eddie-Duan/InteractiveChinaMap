@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户反馈</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .title {
+      font-size: clamp(24px, 5vw, 36px);
+      font-weight: bold;
+      color: #c8102e;
+      margin-bottom: 30px;
+      text-align: center;
+      font-family: "黄山毛峰书法体", serif;
+    }
+
+    .feedback-container {
+      margin-top: 20px;
+    }
+
+    .feedback-title {
+      font-size: 24px;
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    select, textarea, input[type="text"] {
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+
+    select:focus, textarea:focus, input[type="text"]:focus {
+      border-color: #c8102e;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 150px;
+    }
+
+    .image-upload-area {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      background: #fafafa;
+    }
+
+    .image-upload-area:hover {
+      border-color: #c8102e;
+      background: #fff5f5;
+    }
+
+    .image-upload-area.dragover {
+      border-color: #c8102e;
+      background: #fff0f0;
+    }
+
+    .upload-icon {
+      font-size: 40px;
+      margin-bottom: 10px;
+    }
+
+    .upload-text {
+      font-size: 14px;
+      color: #999;
+    }
+
+    .upload-text span {
+      color: #c8102e;
+      font-weight: bold;
+    }
+
+    .image-preview-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .image-preview-item {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid #eee;
+    }
+
+    .image-preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .image-preview-item .remove-btn {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 22px;
+      height: 22px;
+      background: rgba(200, 16, 46, 0.85);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .image-preview-item .remove-btn:hover {
+      background: #c8102e;
+    }
+
+    .submit-btn {
+      padding: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 25px;
+      background: linear-gradient(90deg, #c8102e, #e6a23c);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+
+    .feedback-result {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 16px;
+      display: none;
+    }
+
+    .feedback-result.success {
+      background: #f0f9ff;
+      color: #0066cc;
+      border: 1px solid #b3d9ff;
+      display: block;
+    }
+
+    .feedback-result.error {
+      background: #fff0f0;
+      color: #cc0000;
+      border: 1px solid #ffb3b3;
+      display: block;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #ccc, transparent);
+      margin: 40px 0 30px;
+    }
+
+    .records-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .records-title {
+      font-size: 22px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .clear-btn {
+      padding: 8px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 20px;
+      background: #ff4d4f;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: none;
+    }
+
+    .clear-btn:hover {
+      background: #d4373c;
+    }
+
+    .clear-btn.visible {
+      display: inline-block;
+    }
+
+    .records-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-height: 600px;
+      overflow-y: auto;
+      padding-right: 5px;
+    }
+
+    .records-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .records-list::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+
+    .records-list::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 3px;
+    }
+
+    .records-list::-webkit-scrollbar-thumb:hover {
+      background: #999;
+    }
+
+    .record-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border-left: 4px solid #c8102e;
+      animation: slideIn 0.3s ease;
+      position: relative;
+    }
+
+    .record-card.resolved {
+      border-left-color: #52c41a;
+      opacity: 0.7;
+    }
+
+    .record-card.resolved .record-content {
+      text-decoration: line-through;
+      color: #999;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .record-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .record-type {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .record-type.bug { background: #ff4d4f; }
+    .record-type.suggestion { background: #52c41a; }
+    .record-type.content { background: #faad14; color: #333; }
+    .record-type.other { background: #1890ff; }
+
+    .record-time {
+      font-size: 13px;
+      color: #999;
+    }
+
+    .record-resolved-badge {
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      background: #f6ffed;
+      color: #52c41a;
+      border: 1px solid #b7eb8f;
+    }
+
+    .record-content {
+      font-size: 15px;
+      color: #444;
+      line-height: 1.7;
+      margin-bottom: 10px;
+      white-space: pre-wrap;
+    }
+
+    .record-contact {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .record-images {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .record-images img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid #eee;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .record-images img:hover {
+      transform: scale(1.1);
+    }
+
+    .record-actions {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      display: none;
+    }
+
+    .resolve-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #666;
+      user-select: none;
+    }
+
+    .resolve-checkbox input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #52c41a;
+    }
+
+    .record-actions.visible {
+      display: flex;
+    }
+
+    .no-records {
+      text-align: center;
+      padding: 40px;
+      color: #bbb;
+      font-size: 16px;
+    }
+
+    .back-button {
+      margin-top: 30px;
+      padding: 12px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 25px;
+      background: #666;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      align-self: center;
+    }
+
+    .back-button:hover {
+      background: #444;
+      transform: translateY(-2px);
+    }
+
+    .lightbox {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      cursor: pointer;
+    }
+
+    .lightbox.active {
+      display: flex;
+    }
+
+    .lightbox img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 8px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    }
+
+    @media screen and (max-width: 768px) {
+      .container { padding: 20px; }
+      .title { font-size: 24px; }
+      .image-preview-item { width: 80px; height: 80px; }
+      .record-images img { width: 60px; height: 60px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title" data-lang-key="feedback-title">用户反馈</h1>
+
+    <div class="feedback-container">
+      <h2 class="feedback-title" data-lang-key="feedback-subtitle">请告诉我们您的意见</h2>
+      <form id="feedbackForm">
+        <div class="form-group">
+          <label for="userName" data-lang-key="name-label">您的姓名/昵称（选填）</label>
+          <input type="text" id="userName" placeholder="感谢您的宝贵建议" data-lang-key="name-placeholder">
+        </div>  
+        <div class="form-group">
+          <label for="feedbackType" data-lang-key="feedback-type-label">反馈类型</label>
+          <select id="feedbackType" required>
+            <option value="" data-lang-key="select-feedback-type">请选择反馈类型</option>
+            <option value="bug" data-lang-key="bug-type">功能 bug</option>
+            <option value="suggestion" data-lang-key="suggestion-type">功能建议</option>
+            <option value="content" data-lang-key="content-type">内容错误</option>
+            <option value="other" data-lang-key="other-type">其他问题</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="feedbackContent" data-lang-key="feedback-content-label">反馈内容</label>
+          <textarea id="feedbackContent" rows="5" required placeholder="请详细描述您的反馈..." data-lang-key="feedback-content-placeholder"></textarea>
+        </div>
+        <div class="form-group">
+          <label data-lang-key="upload-image-label">上传图片（选填，最多3张）</label>
+          <div class="image-upload-area" id="uploadArea">
+            <div class="upload-icon">📷</div>
+            <div class="upload-text" data-lang-key="upload-text">点击或拖拽图片到此处上传<br><span data-lang-key="upload-text-hint">支持 JPG、PNG 格式，单张不超过 2MB</span></div>
+            <input type="file" id="imageInput" accept="image/jpeg,image/png" multiple style="display:none">
+          </div>
+          <div class="image-preview-container" id="imagePreview"></div>
+        </div>
+        <div class="form-group">
+          <label for="contactInfo" data-lang-key="contact-label">联系方式（选填）</label>
+          <input type="text" id="contactInfo" placeholder="工作邮箱，方便我们联系您" data-lang-key="contact-placeholder">
+        </div>
+        <button type="submit" class="submit-btn" data-lang-key="submit-feedback">提交反馈</button>
+      </form>
+      <div id="feedbackResult" class="feedback-result"></div>
+    </div>
+
+    <button class="back-button" onclick="window.location.href='index.html'" style="margin-bottom: 30px;" data-lang-key="back-home">返回首页</button>
+
+    <div class="divider"></div>
+
+    <div class="records-section">
+      <div class="records-header">
+        <h2 class="records-title" data-lang-key="feedback-records">📋 反馈记录</h2>
+        <button class="clear-btn" id="clearBtn" onclick="clearAllFeedback()" data-lang-key="clear-all">清空全部</button>
+      </div>
+      <div class="records-list" id="recordsList">
+        <div class="no-records" id="noRecords" data-lang-key="no-records">暂无反馈记录</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="放大查看">
+  </div>
+
+  <script>
+    // 语言翻译
+    const translations = {
+      'zh-CN': {
+        'feedback-title': '用户反馈',
+        'feedback-subtitle': '请告诉我们您的意见',
+        'name-label': '您的姓名/昵称（选填）',
+        'name-placeholder': '感谢您的宝贵建议',
+        'feedback-type-label': '反馈类型',
+        'select-feedback-type': '请选择反馈类型',
+        'bug-type': '功能 bug',
+        'suggestion-type': '功能建议',
+        'content-type': '内容错误',
+        'other-type': '其他问题',
+        'feedback-content-label': '反馈内容',
+        'feedback-content-placeholder': '请详细描述您的反馈...',
+        'upload-image-label': '上传图片（选填，最多3张）',
+        'upload-text': '点击或拖拽图片到此处上传',
+        'upload-text-hint': '支持 JPG、PNG 格式，单张不超过 2MB',
+        'contact-label': '联系方式（选填）',
+        'contact-placeholder': '工作邮箱，方便我们联系您',
+        'submit-feedback': '提交反馈',
+        'back-home': '返回首页',
+        'feedback-records': '📋 反馈记录',
+        'clear-all': '清空全部',
+        'no-records': '暂无反馈记录',
+        'max-images': '最多只能上传 ',
+        'max-images-hint': ' 张图片',
+        'image-format-error': '仅支持 JPG、PNG 格式图片',
+        'image-size-error': '图片大小不能超过 ',
+        'image-size-hint': 'MB',
+        'required-fields': '请填写必填项！',
+        'feedback-success': '反馈提交成功！感谢您的建议，我们会认真处理。',
+        'confirm-clear': '确定要清空所有反馈记录吗？此操作不可恢复。',
+        'confirm-comment': '请输入评论内容',
+        'bug-type-label': '功能 Bug',
+        'suggestion-type-label': '功能建议',
+        'content-type-label': '内容错误',
+        'other-type-label': '其他问题',
+        'contact-info': '📞 联系方式：',
+        'anonymous': '匿名',
+        'add-comment': '添加评论',
+        'comment-placeholder': '写下您的评论...',
+        'user-placeholder': '您的姓名/昵称（选填）',
+        'submit-comment': '提交评论',
+        'resolved': '已处理',
+        'developer-tools-disabled': '开发者工具已禁用',
+        'right-click-disabled': '右键菜单已禁用'
+      },
+      'en': {
+        'feedback-title': 'User Feedback',
+        'feedback-subtitle': 'Please tell us your opinions',
+        'name-label': 'Your name/nickname (optional)',
+        'name-placeholder': 'Thank you for your valuable suggestions',
+        'feedback-type-label': 'Feedback Type',
+        'select-feedback-type': 'Please select feedback type',
+        'bug-type': 'Function bug',
+        'suggestion-type': 'Function suggestion',
+        'content-type': 'Content error',
+        'other-type': 'Other issues',
+        'feedback-content-label': 'Feedback Content',
+        'feedback-content-placeholder': 'Please describe your feedback in detail...',
+        'upload-image-label': 'Upload images (optional, max 3)',
+        'upload-text': 'Click or drag images here to upload',
+        'upload-text-hint': 'Supports JPG, PNG format, max 2MB per image',
+        'contact-label': 'Contact information (optional)',
+        'contact-placeholder': 'Work email, so we can contact you',
+        'submit-feedback': 'Submit Feedback',
+        'back-home': 'Back to Home',
+        'feedback-records': '📋 Feedback Records',
+        'clear-all': 'Clear All',
+        'no-records': 'No feedback records',
+        'max-images': 'Maximum ',
+        'max-images-hint': ' images allowed',
+        'image-format-error': 'Only JPG, PNG formats are supported',
+        'image-size-error': 'Image size cannot exceed ',
+        'image-size-hint': 'MB',
+        'required-fields': 'Please fill in the required fields!',
+        'feedback-success': 'Feedback submitted successfully! Thank you for your suggestions, we will handle them carefully.',
+        'confirm-clear': 'Are you sure you want to clear all feedback records? This operation cannot be undone.',
+        'confirm-comment': 'Please enter comment content',
+        'bug-type-label': 'Function Bug',
+        'suggestion-type-label': 'Function Suggestion',
+        'content-type-label': 'Content Error',
+        'other-type-label': 'Other Issues',
+        'contact-info': '📞 Contact: ',
+        'anonymous': 'Anonymous',
+        'add-comment': 'Add Comment',
+        'comment-placeholder': 'Write your comment...',
+        'user-placeholder': 'Your name/nickname (optional)',
+        'submit-comment': 'Submit Comment',
+        'resolved': 'Resolved',
+        'developer-tools-disabled': 'Developer tools are disabled',
+        'right-click-disabled': 'Right-click menu is disabled'
+      }
+    };
+
+    const MAX_IMAGES = 3;
+    const MAX_SIZE_MB = 2;
+    let uploadedImages = [];
+    let isAdmin = sessionStorage.getItem('chinaMapAdmin') === 'true';
+
+    function updateAdminUI() {
+      isAdmin = sessionStorage.getItem('chinaMapAdmin') === 'true';
+      const clearBtn = document.getElementById('clearBtn');
+      if (isAdmin) {
+        clearBtn.classList.add('visible');
+      } else {
+        clearBtn.classList.remove('visible');
+      }
+      document.querySelectorAll('.record-actions').forEach(el => {
+        if (isAdmin) el.classList.add('visible');
+        else el.classList.remove('visible');
+      });
+    }
+
+    const uploadArea = document.getElementById('uploadArea');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+
+    uploadArea.addEventListener('click', () => imageInput.click());
+
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+    });
+
+    imageInput.addEventListener('change', (e) => {
+      handleFiles(e.target.files);
+      imageInput.value = '';
+    });
+
+    function handleFiles(files) {
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+      for (let i = 0; i < files.length; i++) {
+        if (uploadedImages.length >= MAX_IMAGES) {
+          showResult('error', translations[language]['max-images'] + MAX_IMAGES + translations[language]['max-images-hint']);
+          return;
+        }
+        const file = files[i];
+        if (!file.type.match(/image\/(jpeg|png)/)) {
+          showResult('error', translations[language]['image-format-error']);
+          continue;
+        }
+        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+          showResult('error', translations[language]['image-size-error'] + MAX_SIZE_MB + translations[language]['image-size-hint']);
+          continue;
+        }
+        compressImage(file, (base64) => {
+          uploadedImages.push(base64);
+          renderPreviews();
+        });
+      }
+    }
+
+    function compressImage(file, callback) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let w = img.width;
+          let h = img.height;
+          const maxDim = 800;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) { h = (h / w) * maxDim; w = maxDim; }
+            else { w = (w / h) * maxDim; h = maxDim; }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          callback(canvas.toDataURL('image/jpeg', 0.7));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderPreviews() {
+      imagePreview.innerHTML = '';
+      uploadedImages.forEach((src, idx) => {
+        const item = document.createElement('div');
+        item.className = 'image-preview-item';
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = '预览图 ' + (idx + 1);
+        const btn = document.createElement('button');
+        btn.className = 'remove-btn';
+        btn.textContent = '×';
+        btn.type = 'button';
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          uploadedImages.splice(idx, 1);
+          renderPreviews();
+        };
+        item.appendChild(img);
+        item.appendChild(btn);
+        imagePreview.appendChild(item);
+      });
+    }
+
+    document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+
+      const feedbackType = document.getElementById('feedbackType').value;
+      const feedbackContent = document.getElementById('feedbackContent').value.trim();
+      const userName = document.getElementById('userName').value.trim();
+      const contactInfo = document.getElementById('contactInfo').value.trim();
+
+      if (!feedbackType || !feedbackContent) {
+        showResult('error', translations[language]['required-fields']);
+        return;
+      }
+
+      // 合并姓名和联系方式
+      let contact = '';
+      if (userName && contactInfo) {
+        contact = userName + ' (' + contactInfo + ')';
+      } else if (userName) {
+        contact = userName;
+      } else if (contactInfo) {
+        contact = contactInfo;
+      } else {
+        contact = translations[language]['anonymous'];
+      }
+
+      const feedback = {
+        id: Date.now(),
+        type: feedbackType,
+        content: feedbackContent,
+        contact: contact,
+        images: uploadedImages.slice(),
+        time: new Date().toLocaleString(language === 'zh-CN' ? 'zh-CN' : 'en-US'),
+        resolved: false,
+        comments: []
+      };
+
+      let feedbacks = JSON.parse(localStorage.getItem('chinaMapFeedbacks') || '[]');
+      feedbacks.unshift(feedback);
+
+      try {
+        localStorage.setItem('chinaMapFeedbacks', JSON.stringify(feedbacks));
+      } catch (err) {
+        if (err.name === 'QuotaExceededError') {
+          while (feedbacks.length > 1) {
+            feedbacks.pop();
+            try {
+              localStorage.setItem('chinaMapFeedbacks', JSON.stringify(feedbacks));
+              break;
+            } catch (e) { }
+          }
+        }
+      }
+
+      showResult('success', translations[language]['feedback-success']);
+
+      document.getElementById('feedbackForm').reset();
+      uploadedImages = [];
+      renderPreviews();
+
+      setTimeout(() => {
+        document.getElementById('feedbackResult').style.display = 'none';
+      }, 3000);
+
+      loadRecords();
+    });
+
+    function showResult(type, msg) {
+      const el = document.getElementById('feedbackResult');
+      el.className = 'feedback-result ' + type;
+      el.textContent = msg;
+    }
+
+    function loadRecords() {
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+      const feedbacks = JSON.parse(localStorage.getItem('chinaMapFeedbacks') || '[]');
+      const list = document.getElementById('recordsList');
+      const noRecords = document.getElementById('noRecords');
+
+      if (feedbacks.length === 0) {
+        list.innerHTML = '';
+        list.appendChild(noRecords);
+        noRecords.style.display = 'block';
+        return;
+      }
+
+      const typeLabels = {
+        'zh-CN': { bug: '功能 Bug', suggestion: '功能建议', content: '内容错误', other: '其他问题' },
+        'en': { bug: 'Function Bug', suggestion: 'Function Suggestion', content: 'Content Error', other: 'Other Issues' }
+      };
+
+      list.innerHTML = '';
+      feedbacks.forEach((fb) => {
+        const card = document.createElement('div');
+        card.className = 'record-card' + (fb.resolved ? ' resolved' : '');
+        card.dataset.id = fb.id;
+
+        let imagesHtml = '';
+        if (fb.images && fb.images.length > 0) {
+          imagesHtml = '<div class="record-images">';
+          fb.images.forEach((src) => {
+            imagesHtml += '<img src="' + src + '" alt="反馈图片" onclick="openLightbox(this.src)">';
+          });
+          imagesHtml += '</div>';
+        }
+
+        const resolvedBadge = fb.resolved ? '<span class="record-resolved-badge">' + translations[language]['resolved'] + '</span>' : '';
+
+        // 评论区域
+        let commentsHtml = '';
+        if (fb.comments && fb.comments.length > 0) {
+          commentsHtml = '<div class="record-comments" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">';
+          commentsHtml += '<h4 style="font-size: 14px; color: #666; margin-bottom: 10px;">💬 ' + translations[language]['add-comment'] + '</h4>';
+          fb.comments.forEach(comment => {
+            commentsHtml += '<div class="comment-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">';
+            commentsHtml += '<div style="display: flex; justify-content: space-between; margin-bottom: 5px;">';
+            commentsHtml += '<span style="font-weight: bold; color: #333;">' + (comment.author || translations[language]['anonymous']) + '</span>';
+            commentsHtml += '<span style="color: #999; font-size: 12px;">' + comment.time + '</span>';
+            commentsHtml += '</div>';
+            commentsHtml += '<div style="color: #444; line-height: 1.4;">' + escapeHtml(comment.content) + '</div>';
+            commentsHtml += '</div>';
+          });
+          commentsHtml += '</div>';
+        }
+
+        // 评论表单
+        let commentFormHtml = '';
+        commentFormHtml = '<div class="comment-form" style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #eee;">';
+        commentFormHtml += '<h4 style="font-size: 14px; color: #666; margin-bottom: 10px;">' + translations[language]['add-comment'] + '</h4>';
+        commentFormHtml += '<div style="display: flex; gap: 10px; flex-wrap: wrap;">';
+        commentFormHtml += '<input type="text" id="commentAuthor-' + fb.id + '" placeholder="' + translations[language]['user-placeholder'] + '" style="flex: 1; min-width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">';
+        commentFormHtml += '<textarea id="commentContent-' + fb.id + '" placeholder="' + translations[language]['comment-placeholder'] + '" style="flex: 1; min-width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; resize: vertical; min-height: 60px; margin-top: 5px;"></textarea>';
+        commentFormHtml += '<button type="button" onclick="addComment(' + fb.id + ')" style="padding: 8px 16px; background: #c8102e; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; margin-top: 5px;">' + translations[language]['submit-comment'] + '</button>';
+        commentFormHtml += '</div>';
+        commentFormHtml += '</div>';
+
+        card.innerHTML =
+          '<div class="record-actions" id="actions-' + fb.id + '">' +
+            '<label class="resolve-checkbox">' +
+              '<input type="checkbox" ' + (fb.resolved ? 'checked' : '') + ' onchange="toggleResolved(' + fb.id + ', this.checked)">' +
+              translations[language]['resolved'] +
+            '</label>' +
+          '</div>' +
+          '<div class="record-meta">' +
+            '<span class="record-type ' + fb.type + '">' + (typeLabels[language][fb.type] || fb.type) + '</span>' +
+            '<span class="record-time">' + fb.time + '</span>' +
+            resolvedBadge +
+          '</div>' +
+          '<div class="record-content">' + escapeHtml(fb.content) + '</div>' +
+          '<div class="record-contact">' + translations[language]['contact-info'] + escapeHtml(fb.contact) + '</div>' +
+          imagesHtml +
+          commentsHtml +
+          commentFormHtml;
+
+        list.appendChild(card);
+      });
+
+      updateAdminUI();
+    }
+
+    function toggleResolved(feedbackId, checked) {
+      let feedbacks = JSON.parse(localStorage.getItem('chinaMapFeedbacks') || '[]');
+      const fb = feedbacks.find(f => f.id === feedbackId);
+      if (fb) {
+        fb.resolved = checked;
+        localStorage.setItem('chinaMapFeedbacks', JSON.stringify(feedbacks));
+        loadRecords();
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function clearAllFeedback() {
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+      if (confirm(translations[language]['confirm-clear'])) {
+        localStorage.removeItem('chinaMapFeedbacks');
+        loadRecords();
+      }
+    }
+
+    // 添加评论
+    function addComment(feedbackId) {
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+      const authorInput = document.getElementById('commentAuthor-' + feedbackId);
+      const contentInput = document.getElementById('commentContent-' + feedbackId);
+      const author = authorInput.value.trim() || translations[language]['anonymous'];
+      const content = contentInput.value.trim();
+
+      if (!content) {
+        alert(translations[language]['confirm-comment']);
+        return;
+      }
+
+      let feedbacks = JSON.parse(localStorage.getItem('chinaMapFeedbacks') || '[]');
+      const fb = feedbacks.find(f => f.id === feedbackId);
+      if (fb) {
+        if (!fb.comments) {
+          fb.comments = [];
+        }
+
+        const comment = {
+          id: Date.now(),
+          author: author,
+          content: content,
+          time: new Date().toLocaleString(language === 'zh-CN' ? 'zh-CN' : 'en-US')
+        };
+
+        fb.comments.push(comment);
+        localStorage.setItem('chinaMapFeedbacks', JSON.stringify(feedbacks));
+        loadRecords();
+
+        // 清空输入框
+        authorInput.value = '';
+        contentInput.value = '';
+      }
+    }
+
+    function openLightbox(src) {
+      document.getElementById('lightboxImg').src = src;
+      document.getElementById('lightbox').classList.add('active');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('active');
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+
+    loadRecords();
+
+    // 禁用 F12
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+        const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+        alert(translations[language]['developer-tools-disabled']);
+      }
+    });
+
+    // 禁用右键菜单
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+      alert(translations[language]['right-click-disabled']);
+    });
+
+    // 应用语言
+    function applyLanguage() {
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+      document.documentElement.lang = language;
+      
+      // 更新所有带data-lang-key的元素
+      document.querySelectorAll('[data-lang-key]').forEach(element => {
+        const key = element.getAttribute('data-lang-key');
+        if (translations[language] && translations[language][key]) {
+          element.innerHTML = translations[language][key];
+        }
+        // 处理placeholder属性
+        if (element.hasAttribute('placeholder')) {
+          const placeholderKey = element.getAttribute('data-lang-key');
+          if (translations[language] && translations[language][placeholderKey]) {
+            element.placeholder = translations[language][placeholderKey];
+          }
+        }
+      });
+    }
+
+    // 页面加载时应用语言
+    window.addEventListener('load', function() {
+      applyLanguage();
+    });
+  </script>
+</body>
+</html>
