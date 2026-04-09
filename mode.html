@@ -496,16 +496,9 @@
       </div>
       
       <!-- 消息设置 -->
-      <div class="settings-item has-submenu" onclick="toggleSubmenu('messageSubmenu', this)" data-lang-key="messages">
+      <div class="settings-item" onclick="viewMessages()" data-lang-key="messages">
         <span>📢 消息</span>
         <span class="notification-badge" id="messageNotification" style="display: none; position: absolute; top: 10px; right: 10px;">1</span>
-      </div>
-      <div class="settings-submenu" id="messageSubmenu">
-        <div class="settings-item" onclick="viewMessages()" data-lang-key="view-messages">
-          <span>查看消息</span>
-          <span class="notification-badge" id="viewMessageNotification" style="display: none; position: absolute; top: 10px; right: 10px;">1</span>
-        </div>
-        <div class="settings-item" onclick="postMessage()" data-lang-key="post-message">发布消息</div>
       </div>
       
       <div class="settings-item divider"></div>
@@ -804,9 +797,11 @@
           messageHtml += '<div style="font-size: 12px; color: #999; display: flex; justify-content: space-between; align-items: center;">';
           messageHtml += '<span>' + translations[language]['message-time'] + ': ' + msg.time + '</span>';
           messageHtml += '<div style="display: flex; gap: 10px; align-items: center;">';
-          messageHtml += '<button onclick="markMessageAsRead(' + msg.id + ')" style="background: none; border: none; color: ' + (msg.read ? '#52c41a' : '#1890ff') + '; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px;">';
-          messageHtml += msg.read ? '✅ 已读' : '☑️ 标记为已读';
-          messageHtml += '</button>';
+          if (!isAdmin) {
+            messageHtml += '<button onclick="markMessageAsRead(' + msg.id + ')" style="background: none; border: none; color: ' + (msg.read ? '#52c41a' : '#1890ff') + '; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px;">';
+            messageHtml += msg.read ? '✅ 已读' : '☑️ 标记为已读';
+            messageHtml += '</button>';
+          }
           if (isAdmin) {
             messageHtml += '<button onclick="deleteMessage(' + msg.id + ')" style="background: none; border: none; color: #ff4d4f; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px;">';
             messageHtml += '🗑️ 删除';
@@ -848,7 +843,7 @@
         <h3 style="margin-bottom: 15px; color: #333;">${translations[language]['messages-title']}</h3>
         ${messageHtml}
         ${adminButtons}
-        <button onclick="this.closest('div').parentNode.remove()" style="margin-top: 15px; padding: 8px 16px; background: #c8102e; color: white; border: none; border-radius: 4px; cursor: pointer;">${translations[language]['close']}</button>
+        <button onclick="this.closest('div[style*=\"z-index: 10000\"]').remove()" style="margin-top: 15px; padding: 8px 16px; background: #c8102e; color: white; border: none; border-radius: 4px; cursor: pointer;">${translations[language]['close']}</button>
       `;
       
       modal.appendChild(modalContent);
@@ -906,19 +901,15 @@
       
       const settingsNotification = document.getElementById('settingsNotification');
       const messageNotification = document.getElementById('messageNotification');
-      const viewMessageNotification = document.getElementById('viewMessageNotification');
       
       if (unreadCount > 0) {
         settingsNotification.style.display = 'flex';
         messageNotification.style.display = 'flex';
-        viewMessageNotification.style.display = 'flex';
         settingsNotification.textContent = unreadCount;
         messageNotification.textContent = unreadCount;
-        viewMessageNotification.textContent = unreadCount;
       } else {
         settingsNotification.style.display = 'none';
         messageNotification.style.display = 'none';
-        viewMessageNotification.style.display = 'none';
       }
     }
 
@@ -954,7 +945,7 @@
         <h3 style="margin-bottom: 15px; color: #333;">${translations[language]['post-message-title']}</h3>
         <textarea id="messageContent" placeholder="${translations[language]['message-placeholder']}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; min-height: 120px; margin-bottom: 15px;"></textarea>
         <div style="display: flex; gap: 10px; justify-content: flex-end;">
-          <button onclick="this.closest('div').parentNode.remove()" style="padding: 8px 16px; background: #f0f0f0; color: #333; border: none; border-radius: 4px; cursor: pointer;">${translations[language]['cancel']}</button>
+          <button onclick="this.closest('div[style*=\"z-index: 10000\"]').remove()" style="padding: 8px 16px; background: #f0f0f0; color: #333; border: none; border-radius: 4px; cursor: pointer;">${translations[language]['cancel']}</button>
           <button onclick="submitMessage()" style="padding: 8px 16px; background: #c8102e; color: white; border: none; border-radius: 4px; cursor: pointer;">${translations[language]['submit']}</button>
         </div>
       `;
@@ -997,7 +988,10 @@
       localStorage.setItem('chinaMapMessages', JSON.stringify(messages));
       
       // 关闭模态框
-      document.querySelector('[onclick="submitMessage()"]').closest('div').parentNode.remove();
+      const modal = document.querySelector('div[style*="z-index: 10000"]');
+      if (modal) {
+        modal.remove();
+      }
       
       alert(translations[language]['message-posted']);
       
