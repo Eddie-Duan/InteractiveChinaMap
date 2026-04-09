@@ -81,6 +81,11 @@
       border-color: #c8102e;
     }
 
+    select::placeholder, textarea::placeholder, input[type="text"]::placeholder {
+      color: #999;
+      font-style: italic;
+    }
+
     textarea {
       resize: vertical;
       min-height: 150px;
@@ -841,10 +846,15 @@
           commentsHtml = '<div class="record-comments" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee;">';
           commentsHtml += '<h4 style="font-size: 14px; color: #666; margin-bottom: 10px;">💬 ' + translations[language]['add-comment'] + '</h4>';
           fb.comments.forEach(comment => {
-            commentsHtml += '<div class="comment-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 13px;">';
+            commentsHtml += '<div class="comment-item" style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 8px; font-size: 13px; position: relative;">';
             commentsHtml += '<div style="display: flex; justify-content: space-between; margin-bottom: 5px;">';
             commentsHtml += '<span style="font-weight: bold; color: #333;">' + (comment.author || translations[language]['anonymous']) + '</span>';
+            commentsHtml += '<div style="display: flex; align-items: center; gap: 10px;">';
             commentsHtml += '<span style="color: #999; font-size: 12px;">' + comment.time + '</span>';
+            if (isAdmin) {
+              commentsHtml += '<button class="delete-comment-btn" onclick="deleteComment(' + fb.id + ', ' + comment.id + ')" style="background: none; border: none; color: #ff4d4f; cursor: pointer; font-size: 14px; opacity: 0.7; transition: opacity 0.3s;">🗑️</button>';
+            }
+            commentsHtml += '</div>';
             commentsHtml += '</div>';
             commentsHtml += '<div style="color: #444; line-height: 1.4;">' + escapeHtml(comment.content) + '</div>';
             commentsHtml += '</div>';
@@ -869,6 +879,7 @@
               '<input type="checkbox" ' + (fb.resolved ? 'checked' : '') + ' onchange="toggleResolved(' + fb.id + ', this.checked)">' +
               translations[language]['resolved'] +
             '</label>' +
+            (isAdmin ? '<button class="delete-feedback-btn" onclick="deleteFeedback(' + fb.id + ')" style="margin-left: 15px; background: none; border: none; color: #ff4d4f; cursor: pointer; font-size: 14px; opacity: 0.7; transition: opacity 0.3s;">🗑️</button>' : '') +
           '</div>' +
           '<div class="record-meta">' +
             '<span class="record-type ' + fb.type + '">' + (typeLabels[language][fb.type] || fb.type) + '</span>' +
@@ -908,6 +919,29 @@
       if (confirm(translations[language]['confirm-clear'])) {
         localStorage.removeItem('chinaMapFeedbacks');
         loadRecords();
+      }
+    }
+
+    function deleteFeedback(feedbackId) {
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+      if (confirm('确定删除？')) {
+        let feedbacks = JSON.parse(localStorage.getItem('chinaMapFeedbacks') || '[]');
+        feedbacks = feedbacks.filter(f => f.id !== feedbackId);
+        localStorage.setItem('chinaMapFeedbacks', JSON.stringify(feedbacks));
+        loadRecords();
+      }
+    }
+
+    function deleteComment(feedbackId, commentId) {
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+      if (confirm('确定删除？')) {
+        let feedbacks = JSON.parse(localStorage.getItem('chinaMapFeedbacks') || '[]');
+        const fb = feedbacks.find(f => f.id === feedbackId);
+        if (fb && fb.comments) {
+          fb.comments = fb.comments.filter(c => c.id !== commentId);
+          localStorage.setItem('chinaMapFeedbacks', JSON.stringify(feedbacks));
+          loadRecords();
+        }
       }
     }
 

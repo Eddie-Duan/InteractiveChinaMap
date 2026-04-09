@@ -257,6 +257,27 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       transition: all 0.3s ease;
       z-index: 1000;
+      position: relative;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #ff4d4f;
+      color: white;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .settings-item.has-submenu {
+      position: relative;
     }
 
     .settings-button:hover {
@@ -452,7 +473,7 @@
 <body>
   <div class="login-container">
     <!-- 设置按钮 -->
-    <button class="settings-button" id="settingsButton">⚙️</button>
+    <button class="settings-button" id="settingsButton">⚙️<span class="notification-badge" id="settingsNotification" style="display: none;">1</span></button>
     
     <!-- 设置菜单 -->
     <div class="settings-menu" id="settingsMenu">
@@ -478,6 +499,7 @@
       <!-- 消息设置 -->
       <div class="settings-item has-submenu" onclick="toggleSubmenu('messageSubmenu', this)" data-lang-key="messages">
         <span>📢 消息</span>
+        <span class="notification-badge" id="messageNotification" style="display: none; position: absolute; top: 10px; right: 10px;">1</span>
       </div>
       <div class="settings-submenu" id="messageSubmenu">
         <div class="settings-item" onclick="viewMessages()" data-lang-key="view-messages">查看消息</div>
@@ -492,7 +514,7 @@
       </div>
     </div>
     
-    <h1 class="login-title" data-lang-key="welcome-title">江山萬里情<br>大美中國行</h1>
+    <h1 class="login-title" data-lang-key="welcome-title">江山万里情<br>大美中国行</h1>
     
     <div class="mode-selector">
       <!-- 拼图模式 -->
@@ -757,17 +779,31 @@
     // 消息功能
     function viewMessages() {
       const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
-      const messages = JSON.parse(localStorage.getItem('chinaMapMessages') || '[]');
+      let messages = JSON.parse(localStorage.getItem('chinaMapMessages') || '[]');
+      
+      // 确保每条消息都有read属性
+      messages = messages.map(msg => {
+        if (msg.read === undefined) {
+          msg.read = false;
+        }
+        return msg;
+      });
+      localStorage.setItem('chinaMapMessages', JSON.stringify(messages));
       
       let messageHtml = '';
       if (messages.length === 0) {
         messageHtml = '<div style="text-align: center; padding: 20px; color: #666;">' + translations[language]['no-messages'] + '</div>';
       } else {
         messages.forEach(msg => {
-          messageHtml += '<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px;">';
+          messageHtml += '<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px; position: relative;">';
           messageHtml += '<div style="font-weight: bold; margin-bottom: 5px;">' + translations[language]['message-content'] + '</div>';
           messageHtml += '<div style="margin-bottom: 8px; line-height: 1.4;">' + msg.content + '</div>';
-          messageHtml += '<div style="font-size: 12px; color: #999;">' + translations[language]['message-time'] + ': ' + msg.time + '</div>';
+          messageHtml += '<div style="font-size: 12px; color: #999; display: flex; justify-content: space-between; align-items: center;">';
+          messageHtml += '<span>' + translations[language]['message-time'] + ': ' + msg.time + '</span>';
+          messageHtml += '<button onclick="markMessageAsRead(' + msg.id + ')" style="background: none; border: none; color: ' + (msg.read ? '#52c41a' : '#1890ff') + '; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px;">';
+          messageHtml += msg.read ? '✅ 已读' : '☑️ 标记为已读';
+          messageHtml += '</button>';
+          messageHtml += '</div>';
           messageHtml += '</div>';
         });
       }
@@ -808,6 +844,43 @@
           modal.remove();
         }
       });
+    }
+
+    function markMessageAsRead(messageId) {
+      let messages = JSON.parse(localStorage.getItem('chinaMapMessages') || '[]');
+      messages = messages.map(msg => {
+        if (msg.id === messageId) {
+          msg.read = true;
+        }
+        return msg;
+      });
+      localStorage.setItem('chinaMapMessages', JSON.stringify(messages));
+      // 刷新消息列表
+      const modal = document.querySelector('div[style*="z-index: 10000"]');
+      if (modal) {
+        modal.remove();
+      }
+      viewMessages();
+      // 更新通知徽章
+      updateNotificationBadges();
+    }
+
+    function updateNotificationBadges() {
+      const messages = JSON.parse(localStorage.getItem('chinaMapMessages') || '[]');
+      const unreadCount = messages.filter(msg => !msg.read).length;
+      
+      const settingsNotification = document.getElementById('settingsNotification');
+      const messageNotification = document.getElementById('messageNotification');
+      
+      if (unreadCount > 0) {
+        settingsNotification.style.display = 'flex';
+        messageNotification.style.display = 'flex';
+        settingsNotification.textContent = unreadCount;
+        messageNotification.textContent = unreadCount;
+      } else {
+        settingsNotification.style.display = 'none';
+        messageNotification.style.display = 'none';
+      }
     }
 
     function postMessage() {
@@ -870,7 +943,8 @@
       const message = {
         id: Date.now(),
         content: content,
-        time: new Date().toLocaleString(language === 'zh-CN' ? 'zh-CN' : 'en-US')
+        time: new Date().toLocaleString(language === 'zh-CN' ? 'zh-CN' : 'en-US'),
+        read: false
       };
       
       let messages = JSON.parse(localStorage.getItem('chinaMapMessages') || '[]');
@@ -887,6 +961,9 @@
       document.querySelector('[onclick="submitMessage()"]').closest('div').remove();
       
       alert(translations[language]['message-posted']);
+      
+      // 更新通知徽章
+      updateNotificationBadges();
     }
 
     // 退出功能
@@ -901,6 +978,7 @@
     window.addEventListener('load', function() {
       applyTheme();
       applyLanguage();
+      updateNotificationBadges();
     });
 
     // 系统主题变化时更新
