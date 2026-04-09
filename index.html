@@ -353,7 +353,7 @@
     </div>
     
     <div class="button-section">
-      <button class="start-button" onclick="window.location.href='index.html'">开启中国之旅</button>
+      <button class="start-button" onclick="window.location.href='mode.html'">开启中国之旅</button>
     </div>
     
     <div class="footer">
@@ -424,9 +424,12 @@
     function applyLanguage() {
       const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
       
+      // 确保语言代码有效
+      const validLanguage = translations[language] ? language : 'zh-CN';
+      
       // 更新语言选择器状态
       document.querySelectorAll('.language-option').forEach(btn => {
-        if (btn.dataset.lang === language) {
+        if (btn.dataset.lang === validLanguage) {
           btn.classList.add('active');
         } else {
           btn.classList.remove('active');
@@ -434,19 +437,19 @@
       });
       
       // 更新页面内容
-      document.querySelector('.main-title').textContent = translations[language]['main-title'];
-      document.querySelector('.subtitle').textContent = translations[language]['subtitle'];
-      document.querySelector('.start-button').textContent = translations[language]['start-button'];
-      document.querySelector('.footer p').textContent = translations[language]['footer'];
-      document.querySelector('.admin-link').textContent = translations[language]['admin-link'];
-      document.querySelector('.admin-status').textContent = translations[language]['admin-status'];
+      document.querySelector('.main-title').textContent = translations[validLanguage]['main-title'];
+      document.querySelector('.subtitle').textContent = translations[validLanguage]['subtitle'];
+      document.querySelector('.start-button').textContent = translations[validLanguage]['start-button'];
+      document.querySelector('.footer p').textContent = translations[validLanguage]['footer'];
+      document.querySelector('.admin-link').textContent = translations[validLanguage]['admin-link'];
+      document.querySelector('.admin-status').textContent = translations[validLanguage]['admin-status'];
       
       // 更新管理员模态框
-      document.querySelector('.admin-modal h3').textContent = translations[language]['admin-modal-title'];
-      document.querySelector('#adminPassword').placeholder = translations[language]['admin-password-placeholder'];
-      document.querySelectorAll('.modal-btn')[0].textContent = translations[language]['cancel-button'];
-      document.querySelectorAll('.modal-btn')[1].textContent = translations[language]['login-button'];
-      document.querySelector('#adminError').textContent = translations[language]['admin-error'];
+      document.querySelector('.admin-modal h3').textContent = translations[validLanguage]['admin-modal-title'];
+      document.querySelector('#adminPassword').placeholder = translations[validLanguage]['admin-password-placeholder'];
+      document.querySelectorAll('.modal-btn')[0].textContent = translations[validLanguage]['cancel-button'];
+      document.querySelectorAll('.modal-btn')[1].textContent = translations[validLanguage]['login-button'];
+      document.querySelector('#adminError').textContent = translations[validLanguage]['admin-error'];
     }
 
     window.addEventListener('load', function() {
