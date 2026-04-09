@@ -4,8 +4,57 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>中国省份交互式问答 - 学习模式</title>
-  <link rel="stylesheet" href="css/style.css">
+
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+    /* 移动端适配基础设置 */
+    @media screen and (max-width: 1200px) {
+      html {
+        font-size: 14px;
+      }
+    }
+    @media screen and (max-width: 768px) {
+      html {
+        font-size: 12px;
+      }
+    }
+
+    body {
+      padding: 20px;
+      background: #f5f7fa;
+      /* 防止移动端横向滚动 */
+      overflow-x: hidden;
+    }
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 30px; /* 主体与底部图片的间距 */
+      /* 适配小屏幕 */
+      width: 100%;
+      padding: 0 10px;
+    }
+    /* 艺术字标题样式 */
+    .title-container {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .art-title {
+      font-size: clamp(24px, 5vw, 48px);
+      font-weight: bold;
+      color: #c8102e;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      font-family: "黄山毛峰书法体", serif;
+      letter-spacing: 8px;
+      /* 适配小屏幕 */
+      letter-spacing: clamp(2px, 1vw, 8px);
+    }
     /* 模式标题和退出按钮 */
     .mode-header {
       display: flex;
@@ -21,22 +70,238 @@
     }
     
     .exit-btn {
-      padding: 10px 20px;
-      font-size: 14px;
+      padding: 12px 20px;
+      font-size: 16px;
       border: none;
       border-radius: 8px;
       background: #606266;
       color: #fff;
       cursor: pointer;
       transition: background 0.3s;
+      /* 适配小屏幕 */
+      white-space: nowrap;
     }
     
     .exit-btn:hover {
       background: #4e5969;
     }
     
+    /* 主体布局：左中右 */
+    .main-content {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      justify-content: center;
+      flex: 1;
+      /* 适配小屏幕 */
+      flex-wrap: wrap;
+    }
+    /* 左侧面板：仅省份介绍，优化高度和滚动 */
+    .left-panel {
+      width: clamp(280px, 100%, 320px);
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      height: 600px;
+      overflow-y: auto;
+      /* 适配小屏幕 */
+      flex: 1 1 280px;
+      min-width: 280px;
+    }
+    .left-panel h3 {
+      margin-bottom: 15px;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 10;
+    }
+    .wiki-content {
+      line-height: 1.8;
+      color: #444;
+    }
+    .wiki-content h4 {
+      color: #c8102e;
+      margin: 10px 0 15px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .wiki-content p {
+      margin-bottom: 12px;
+      text-indent: 2em;
+    }
+    .wiki-content .empty-tip {
+      color: #999;
+      text-align: center;
+      margin-top: 100px;
+      font-size: 16px;
+      line-height: 2;
+    }
+    /* 地图容器 */
+    .map-container {
+      flex: 1 1 600px;
+      min-width: 300px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      height: 600px;
+      position: relative;
+      overflow: hidden;
+      min-height: 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* 地图控制按钮样式 */
+    .map-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .control-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .control-btn:hover {
+      background: rgba(64, 158, 255, 0.1);
+      transform: scale(1.05);
+    }
+
+    .horizontal-controls {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+    }
+
+    .direction-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    /* 右侧面板 */
+    .right-panel {
+      width: clamp(200px, 100%, 250px);
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      height: 600px;
+      overflow-y: auto;
+      /* 适配小屏幕 */
+      flex: 1 1 200px;
+      min-width: 200px;
+    }
+    .right-panel h3 {
+      margin-bottom: 15px;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 10;
+    }
+    .error-count {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+      color: #666;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    /* 重置按钮样式 */
+    .reset-btn {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #e6a23c;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+      /* 适配小屏幕 */
+      white-space: nowrap;
+    }
+    .reset-btn:hover {
+      background: #d48806;
+    }
+    .reset-btn:active {
+      background: #b77805;
+    }
+    /* 底部中间图片容器 */
+    .bottom-img-container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      margin-top: 10px;
+      /* 适配小屏幕 */
+      overflow: hidden;
+    }
+    .china-img {
+      max-width: 100%;
+      max-height: 400px;
+      object-fit: contain;
+      border-radius: 8px;
+      /* 适配小屏幕 */
+      max-height: clamp(200px, 50vw, 400px);
+    }
+
+    /* 竖屏布局优化 */
+    @media screen and (max-width: 992px) {
+      .main-content {
+        flex-direction: column;
+        align-items: center;
+      }
+      .left-panel, .right-panel {
+        width: 100%;
+        height: 300px;
+      }
+      .map-container {
+        width: 100%;
+        height: 500px;
+      }
+    }
+
+    @media screen and (max-width: 576px) {
+      .map-container {
+        height: 400px;
+      }
+      .left-panel, .right-panel {
+        height: 250px;
+      }
+    }
+    
     /* 学习模式特有样式 */
     .province:hover {
+      fill: #409eff;
+      stroke: #333;
+      stroke-width: 1.2;
+    }
+    .province.active {
       fill: #409eff;
       stroke: #333;
       stroke-width: 1.2;
@@ -67,6 +332,7 @@
 
       <!-- 右侧：操作说明 -->
       <div class="right-panel">
+        <h3>地图控制</h3>
         <!-- 地图控制按钮 -->
         <div class="map-controls">
           
@@ -97,49 +363,233 @@
     </div>
   </div>
 
-  <script src="js/script.js"></script>
+  <script>
+    // 省份名称与SVG id的映射
+    const provinceMap = {
+      "北京市": "beijing",
+      "天津市": "tianjin",
+      "河北省": "hebei",
+      "山西省": "shanxi",
+      "内蒙古自治区": "neimenggu",
+      "辽宁省": "liaoning",
+      "吉林省": "jilin",
+      "黑龙江省": "heilongjiang",
+      "上海市": "shanghai",
+      "江苏省": "jiangsu",
+      "浙江省": "zhejiang",
+      "安徽省": "anhui",
+      "福建省": "fujian",
+      "江西省": "jiangxi",
+      "山东省": "shandong",
+      "河南省": "henan",
+      "湖北省": "hubei",
+      "湖南省": "hunan",
+      "广东省": "guangdong",
+      "广西壮族自治区": "guangxi",
+      "海南省": "hainan",
+      "重庆市": "chongqing",
+      "四川省": "sichuan",
+      "贵州省": "guizhou",
+      "云南省": "yunnan",
+      "西藏自治区": "xizang",
+      "陕西省": "shaanxi",
+      "甘肃省": "gansu",
+      "青海省": "qinghai",
+      "宁夏回族自治区": "ningxia",
+      "新疆维吾尔自治区": "xinjiang",
+      "香港特别行政区": "xianggang",
+      "澳门特别行政区": "aomen",
+      "台湾省": "taiwan"
+    };
+
+    // 省份介绍：每个200字左右，丰富地理/文化/特产/地标
+    const provinceIntro = {
+      "北京市": "首都，全国政治、文化、国际交往和科技创新中心，地处华北平原北部，地势西北高东南低。拥有故宫、天坛、八达岭长城等众多世界文化遗产，胡同与四合院尽显老北京韵味，国贸、中关村则彰显现代繁华。作为全国交通枢纽，汇聚了各地美食与文化，京剧、炸酱面是其鲜明符号，兼具千年古都的底蕴与国际化大都市的活力。",
+      "天津市": "中国北方重要的港口城市和经济中心，京畿门户，地处渤海湾西端。海河穿城而过，造就了独特的水上城市风貌，五大道、意式风情区留存着大量中西合璧的近代建筑，素有“万国建筑博览苑”之称。狗不理包子、十八街麻花、耳朵眼炸糕并称“津门三绝”，相声文化底蕴深厚，是中国北方的曲艺之乡。",
+      "河北省": "环抱京津，地处华北平原，燕赵大地自古多慷慨悲歌之士，文化底蕴深厚。境内既有承德避暑山庄、清东陵、山海关等世界文化遗产，也有北戴河海滨、野三坡等自然风光。作为华北重要的工业和农业大省，钢铁、煤炭产业基础雄厚，赵州雪梨、深州蜜桃等特产驰名中外，邯郸、保定等古都见证了华夏千年历史。",
+      "山西省": "地处黄土高原东部，华夏文明重要发祥地之一，素有“中国古代建筑博物馆”之称。平遥古城、云冈石窟、五台山均为世界文化遗产，晋商文化源远流长，乔家大院、王家大院彰显晋商辉煌。煤炭资源储量丰富，是中国重要的能源基地。老陈醋、汾酒为代表的特产享誉全国，刀削面、莜面栲栳栳是极具特色的民间美食。",
+      "内蒙古自治区": "中国跨经度最广的省级行政区，地处内蒙古高原，草原广袤无垠，素有“草原之乡”的美誉。呼伦贝尔大草原、锡林郭勒草原是中国最美的草原，响沙湾、胡杨林尽显西北大漠风光。蒙古族风情浓郁，那达慕大会、马头琴、蒙古包是其文化符号，手把肉、奶茶、奶皮子等特色美食独具风味，牛羊肉和乳制品产业发达。",
+      "辽宁省": "东北老工业基地核心省份，地处辽东半岛，扼守渤海与黄海咽喉，是中国重要的工业和港口大省。沈阳是东北工业重镇，拥有沈阳故宫、清昭陵等清早期文化遗产；大连是海滨名城，星海广场、金石滩风光秀丽。鞍山钢铁、大连造船等产业享誉全国，盘锦大米、丹东草莓、营口海鲜是知名特产，二人转文化在民间广为流传。",
+      "吉林省": "地处东北腹地，长白山横亘东南部，是松花江、鸭绿江的发源地，素有“白山松水”之称。长白山天池是中国最美的火山湖，延边朝鲜族自治州风情独特，辣白菜、冷面是特色美食。人参、鹿茸、貂皮并称“东北三宝”，吉林市雾凇是中国四大自然奇观之一。汽车、石化产业为支柱，长春是中国重要的汽车工业基地。",
+      "黑龙江省": "中国最北端和最东端的省份，地处东北平原北部，冬季漫长寒冷，素有“冰雪之乡”的美誉。哈尔滨冰雪大世界、亚布力滑雪场是冬季旅游胜地，大兴安岭林海雪原、镜泊湖瀑布尽显北国风光。黑龙江、乌苏里江环绕，淡水鱼资源丰富，五常大米、东北酸菜、锅包肉是特色美食。林业、农业发达，是中国重要的商品粮基地。",
+      "上海市": "国际化大都市，中国经济、金融、贸易和航运中心，地处长江入海口，长三角核心城市。外滩万国建筑博览群与陆家嘴摩天大楼交相辉映，豫园、城隍庙留存着江南古韵，南京路、新天地是知名商圈。海派文化融合中西，本帮菜以浓油赤酱为特色，小笼包、生煎包是经典小吃，浦东开发开放成为中国改革开放的标志性象征。",
+      "江苏省": "地处长江下游平原，素有“鱼米之乡”“人间天堂”的美誉，经济总量常年位居全国前列。境内江河湖海纵横，苏州园林、明孝陵、大运河均为世界文化遗产，南京、苏州、扬州、镇江等古都历史悠久。吴文化底蕴深厚，苏绣、云锦为传统工艺瑰宝，阳澄湖大闸蟹、无锡酱排骨、扬州炒饭等美食驰名中外，民营经济与制造业高度发达。",
+      "浙江省": "地处东南沿海，长三角南翼，山水秀美，民营经济活跃，素有“七山一水二分田”之称。杭州西湖、乌镇、西塘是知名旅游胜地，雁荡山、楠溪江尽显江南山水之美。温州商帮、义乌小商品城享誉全国，数字经济、电子商务产业领先。浙菜清淡鲜美，龙井虾仁、东坡肉、嘉兴粽子是特色美食，西湖龙井、安吉白茶为中国名茶。",
+      "安徽省": "地处江淮大地，横跨长江、淮河，徽文化发祥地，与藏文化、晋文化并称中国三大地域文化。黄山以奇松、怪石、云海、温泉“四绝”闻名天下，宏村、西递的徽派建筑独具特色，黄梅戏是中国五大戏曲剧种之一。宣纸、徽墨、歙砚、宣笔并称“文房四宝”，臭鳜鱼、毛豆腐、符离集烧鸡是特色美食，煤炭、钢铁产业基础雄厚。",
+      "福建省": "地处东南沿海，闽江穿省而过，山海交融，是著名的侨乡，闽南文化、客家文化交融共生。厦门鼓浪屿、泉州开元寺、武夷山均为世界文化遗产，泉州是海上丝绸之路起点。闽菜以清淡鲜香为特色，佛跳墙、沙茶面、土笋冻是经典美食，安溪铁观音、武夷山大红袍为中国名茶。造船、纺织、电子产业发达，民营经济活力十足。",
+      "江西省": "地处长江中下游南岸，赣江穿省而过，素有“赣鄱大地”之称，红色文化底蕴深厚。井冈山是中国革命的摇篮，瑞金是红色故都，庐山、三清山、龙虎山风光秀丽，景德镇是“中国瓷都”，瓷器工艺享誉千年。赣菜鲜香偏辣，瓦罐汤、米粉肉、三杯鸡是特色美食，赣南脐橙、南丰蜜桔是知名水果，有色金属资源储量丰富。",
+      "山东省": "地处黄河下游，渤海与黄海之滨，孔孟之乡，礼仪之邦，齐鲁文化源远流长。泰山雄峙东方，为五岳之首，曲阜三孔是儒家文化发源地，青岛、烟台是美丽的海滨城市。鲁菜是中国八大菜系之首，九转大肠、葱烧海参、德州扒鸡是经典菜品，青岛啤酒、烟台苹果、章丘大葱驰名中外，工业、农业、海洋产业均十分发达。",
+      "河南省": "地处中原腹地，黄河中下游，华夏文明的核心发祥地，素有“九州腹地、十省通衢”之称。洛阳、开封、安阳均为八大古都，龙门石窟、殷墟、少林寺是世界文化遗产，太极拳发源于焦作温县。豫菜鲜香微辣，胡辣汤、烩面、道口烧鸡是特色美食，新郑大枣、温县铁棍山药是知名特产，是中国重要的粮食生产基地和交通枢纽。",
+      "湖北省": "地处长江中游，洞庭湖以北，素有“千湖之省”“九省通衢”之称，长江、汉江在武汉交汇。武汉黄鹤楼名扬天下，三峡大坝是世界最大的水利枢纽工程，武当山、神农架是知名旅游胜地。鄂菜鲜香微辣，热干面、三鲜豆皮、武昌鱼是特色美食，宜昌蜜桔、洪湖莲藕是知名特产，汽车、光电子、石化产业为支柱产业。",
+      "湖南省": "地处长江中游南岸，洞庭湖以南，三湘四水环绕，伟人故里，湖湘文化敢为人先。张家界奇峰三千、秀水八百，是世界自然遗产，岳阳楼、橘子洲头名扬天下，凤凰古城尽显湘西风情。湘菜是中国八大菜系之一，以香辣醇厚为特色，剁椒鱼头、小炒黄牛肉、臭豆腐是经典美食，君山银针、安化黑茶为中国名茶。",
+      "广东省": "中国第一经济大省，地处华南沿海，珠江三角洲核心，改革开放的前沿阵地。广州是千年商都，深圳是创新之都，珠海、汕头是经济特区，香港、澳门与珠三角形成粤港澳大湾区。粤菜是中国八大菜系之首，以清淡鲜美为特色，早茶、烧腊、煲仔饭是经典美食，荔枝、龙眼、菠萝蜜是热带水果，电子、家电、制造业全国领先。",
+      "广西壮族自治区": "地处华南西部，喀斯特地貌广布，素有“山水甲天下”的美誉，漓江山水、桂林山水是世界自然遗产。南宁是绿城，柳州是工业重镇，阳朔、北海银滩是知名旅游胜地。壮族是主体民族，三月三歌圩节是特色民俗，螺蛳粉、桂林米粉、老友粉是经典美食，沙田柚、沙糖桔、罗汉果是知名特产，有色金属资源丰富。",
+      "海南省": "中国唯一的热带省级行政区，地处南海北部，海南岛是中国第二大岛，素有“椰风海韵”的美誉。三亚碧海蓝天、亚龙湾海滩是旅游胜地，文昌是航天城，博鳌亚洲论坛永久会址位于琼海。热带水果资源丰富，椰子、芒果、菠萝蜜、榴莲应有尽有，文昌鸡、和乐蟹、东山羊是“海南四大名菜”，旅游业、热带农业、海洋产业为支柱。",
+      "重庆市": "中国四大直辖市之一，地处长江上游，嘉陵江与长江交汇，素有“山城”“江城”“雾都”之称。洪崖洞夜景魔幻，长江三峡起点，武隆喀斯特、大足石刻是世界文化遗产。火锅是重庆的城市符号，九宫格火锅、串串香、小面是特色美食，巴渝文化热烈奔放，渝东南土家族、苗族风情浓郁，汽车、电子、制造业发达。",
+      "四川省": "地处西南腹地，四川盆地西部，素有“天府之国”的美誉，物产丰饶，风光绝美。成都悠闲安逸，锦里、宽窄巷子尽显川西古韵，九寨沟、稻城亚丁、黄龙是世界级自然景观，乐山大佛、都江堰是世界文化遗产。川菜是中国八大菜系之首，以麻辣鲜香为特色，火锅、宫保鸡丁、麻婆豆腐是经典美食，川茶、川酒享誉全国。",
+      "贵州省": "地处西南腹地，云贵高原东部，素有“山地公园省”之称，喀斯特地貌广布，大数据产业全国领先。黄果树瀑布雄奇壮丽，千户苗寨、肇兴侗寨尽显民族风情，遵义是红色革命圣地。黔菜酸辣鲜香，酸汤鱼、丝娃娃、肠旺面是特色美食，茅台酒是中国国酒，都匀毛尖、湄潭翠芽为中国名茶，煤炭、磷矿资源储量丰富。",
+      "云南省": "地处西南边陲，云贵高原西部，素有“彩云之南”之称，25个少数民族聚居，民族文化多姿多彩。丽江古城、大理古城、西双版纳热带风情、香格里拉雪域风光各具特色，石林、三江并流是世界自然遗产。滇菜鲜香微辣，过桥米线、汽锅鸡、宣威火腿是特色美食，普洱茶、滇红为中国名茶，花卉、烟草、旅游业发达。",
+      "西藏自治区": "地处青藏高原西南部，世界屋脊，平均海拔4000米以上，素有“雪域高原”之称，藏族文化纯净独特。布达拉宫、大昭寺是世界文化遗产，纳木错、羊卓雍错澄澈如镜，珠峰大本营是世界之巅。酥油茶、青稞酒、糌粑是传统美食，藏毯、唐卡是传统工艺瑰宝，旅游业、畜牧业为支柱，生态环境纯净原始。",
+      "陕西省": "地处黄河中游，关中平原腹地，十三朝古都所在地，华夏文明的重要发祥地，历史底蕴厚重。西安兵马俑、大雁塔、古城墙是世界文化遗产，延安是革命圣地，华山以奇险著称。陕菜味浓醇厚，肉夹馍、凉皮、羊肉泡馍是特色美食，西凤酒、岐山醋驰名中外，煤炭、石油资源丰富，航空、航天、军工产业全国领先。",
+      "甘肃省": "地处西北内陆，黄河上游，丝绸之路要道，地貌多样，兼具草原、沙漠、戈壁、丹霞风光。莫高窟是世界文化遗产，张掖丹霞、鸣沙山月牙泉、嘉峪关长城尽显西北壮美。陇菜鲜香酸辣，牛肉面、手抓羊肉、酿皮子是特色美食，白兰瓜、软儿梨是知名水果，石油、煤炭、有色金属资源丰富，中医药产业历史悠久。",
+      "青海省": "地处青藏高原东北部，三江源发源地，长江、黄河、澜沧江都发源于此，素有“中华水塔”之称，高原净土。青海湖是中国最大的内陆湖，塔尔寺是藏传佛教格鲁派六大寺院之一，茶卡盐湖被称为“天空之镜”。青稞酒、酥油茶、手抓肉是特色美食，冬虫夏草、枸杞、牦牛肉是知名特产，旅游业、畜牧业为支柱，生态保护意义重大。",
+      "宁夏回族自治区": "地处黄河上游，宁夏平原，素有“塞上江南”之称，黄河灌溉孕育了肥沃的绿洲。银川是塞上湖城，西夏王陵见证了西夏王朝的历史，沙坡头集沙漠、黄河、绿洲于一体。回族文化浓郁，手抓羊肉、烩小吃、油香是特色美食，中宁枸杞、灵武长枣、盐池滩羊驰名中外，煤炭、电力产业发达，葡萄酒产业发展迅速。",
+      "新疆维吾尔自治区": "中国面积最大的省级行政区，地处西北边陲，亚欧大陆腹地，丝绸之路核心区，异域风情浓郁。天山天池、喀纳斯湖、吐鲁番葡萄沟、那拉提草原风光绝美，坎儿井是古代水利工程奇迹。维吾尔族文化多姿多彩，手抓饭、烤包子、大盘鸡、烤羊肉串是特色美食，葡萄、哈密瓜、红枣等瓜果香甜，石油、天然气资源储量丰富。",
+      "香港特别行政区": "地处珠江口东侧，国际金融、贸易、航运中心，素有“东方之珠”的美誉，中西文化交融。维多利亚港夜景璀璨，太平山、迪士尼乐园是旅游胜地，铜锣湾、尖沙咀是知名商圈。茶餐厅文化独具特色，菠萝油、奶茶、云吞面是经典小吃，购物、美食、旅游业发达，实行“一国两制”的特殊制度。",
+      "澳门特别行政区": "地处珠江口西侧，世界旅游休闲中心，素有“东方蒙特卡洛”之称，中西文化交融四百余年。大三巴牌坊是澳门的象征，妈祖阁、葡京赌场闻名遐迩，议事亭前地尽显葡式风情。葡式蛋挞、猪扒包、马介休是特色美食，葡萄酒、杏仁饼是知名特产，博彩、旅游、酒店业为支柱，实行“一国两制”的特殊制度。",
+      "台湾省": "宝岛台湾，地处东海与南海之间，台湾海峡与大陆相望，风光旖旎，气候温润。阿里山云海、日月潭澄澈、垦丁海滨风光各具特色，台北101曾是世界第一高楼。闽南文化、客家文化、原住民文化交融共生，卤肉饭、珍珠奶茶、蚵仔煎是特色美食，凤梨酥、牛轧糖是知名特产，电子、半导体产业全球领先，旅游业发达。"
+    };
+
+    // 全局状态
+    let zoomScale = 1; // 缩放比例
+    const zoomStep = 0.1; // 缩放步长
+    const maxZoom = 2; // 最大缩放
+    const minZoom = 0.5; // 最小缩放
+    let mapX = 0; // 地图X轴平移位置
+    let mapY = 0; // 地图Y轴平移位置
+    const moveStep = 50; // 移动步长
+
+    // DOM元素获取
+    const wikiContent = document.getElementById("wikiContent");
+
+    // 加载SVG地图
+    async function loadMap() {
+      try {
+        const response = await fetch('assets/PRC_province.svg');
+        const svgText = await response.text();
+        const mapContainer = document.getElementById('mapContainer');
+        mapContainer.innerHTML = svgText;
+        // 给SVG添加id
+        const svgElement = mapContainer.querySelector('svg');
+        if (svgElement) {
+          svgElement.id = 'chinaMap';
+        }
+        // 给省份添加class
+        document.querySelectorAll('svg path').forEach(path => {
+          if (path.id) path.classList.add('province');
+        });
+        // 调整地图大小
+        resizeMap();
+      } catch (err) {
+        console.error('地图加载失败:', err);
+        wikiContent.innerHTML = '<div class="empty-tip">点击地图上的省份<br>查看详细介绍</div>';
+      }
+    }
+
+    // 获取省份介绍
+    function getProvinceIntro(provinceName) {
+      const intro = provinceIntro[provinceName] || `暂无${provinceName}的相关介绍信息`;
+      return `<h4>${provinceName}</h4><p>${intro}</p>`;
+    }
+
+    // 显示省份介绍
+    function showProvinceIntro(provinceName) {
+      wikiContent.innerHTML = getProvinceIntro(provinceName);
+      // 滚动到顶部，方便查看
+      wikiContent.scrollTop = 0;
+    }
+
+    // 调整地图大小以适应容器
+    function resizeMap() {
+      const chinaMap = document.getElementById("chinaMap");
+      if (!chinaMap) return;
+      
+      const mapContainer = document.getElementById("mapContainer");
+      // 使用offsetWidth和offsetHeight以获取实际显示尺寸
+      const containerWidth = mapContainer.offsetWidth - 40; // 减去padding
+      const containerHeight = mapContainer.offsetHeight - 40; // 减去padding
+      
+      // 获取SVG的实际宽高
+      const svgWidth = 878; // SVG原始宽度
+      const svgHeight = 434; // SVG原始高度
+      const mapRatio = svgWidth / svgHeight; // SVG原始宽高比
+      const containerRatio = containerWidth / containerHeight;
+      
+      let scale;
+      if (containerRatio > mapRatio) {
+        // 容器更宽，以高度为基准
+        scale = containerHeight / svgHeight;
+      } else {
+        // 容器更高，以宽度为基准
+        scale = containerWidth / svgWidth;
+      }
+      
+      // 确保地图始终在容器中央，并且不会被遮挡
+      chinaMap.style.width = `${svgWidth}px`;
+      chinaMap.style.height = `${svgHeight}px`;
+      chinaMap.style.transform = `scale(${zoomScale * scale}) translate(${mapX}px, ${mapY}px)`;
+      chinaMap.style.transformOrigin = 'center center';
+      chinaMap.style.position = 'absolute';
+      chinaMap.style.left = '50%';
+      chinaMap.style.top = '50%';
+      chinaMap.style.transform += ' translate(-50%, -50%)';
+      chinaMap.style.margin = '0';
+    }
+
+    // 放大地图
+    function zoomIn() {
+      if (zoomScale < maxZoom) {
+        zoomScale += zoomStep;
+        resizeMap();
+      }
+    }
+
+    // 缩小地图
+    function zoomOut() {
+      if (zoomScale > minZoom) {
+        zoomScale -= zoomStep;
+        resizeMap();
+      }
+    }
+
+    // 移动地图
+    function moveMap(dx, dy) {
+      mapX += dx;
+      mapY += dy;
+      resizeMap();
+    }
+  </script>
   <script>
     // 学习模式特定逻辑
     document.addEventListener('DOMContentLoaded', function() {
       loadMap();
       
-      // 点击地图省份显示介绍
+      // 鼠标悬停省份显示介绍
       const mapContainer = document.getElementById('mapContainer');
-      mapContainer.addEventListener('click', function(e) {
-        const provincePath = e.target.closest('.province');
-        if (provincePath) {
-          const provinceName = Object.keys(provinceMap).find(key => provinceMap[key] === provincePath.id);
-          if (provinceName) {
-            // 移除其他省份的active类
-            document.querySelectorAll('.province').forEach(path => {
-              path.classList.remove('active');
-            });
-            // 添加当前省份的active类
-            provincePath.classList.add('active');
-            // 显示省份介绍
-            showProvinceIntro(provinceName);
-          }
-        }
-      });
-      
-      // 鼠标悬停效果
       mapContainer.addEventListener('mouseover', function(e) {
         const provincePath = e.target.closest('.province');
         if (provincePath) {
+          // 移除其他省份的active类
+          document.querySelectorAll('.province').forEach(path => {
+            path.classList.remove('active');
+          });
+          // 添加当前省份的active类
+          provincePath.classList.add('active');
+          
+          // 高亮显示当前省份
           provincePath.style.fill = '#409eff';
           provincePath.style.stroke = '#333';
           provincePath.style.strokeWidth = '1.2';
+          
+          // 显示省份介绍
+          const provinceName = Object.keys(provinceMap).find(key => provinceMap[key] === provincePath.id);
+          if (provinceName) {
+            showProvinceIntro(provinceName);
+          }
         }
       });
       
       mapContainer.addEventListener('mouseout', function(e) {
         const provincePath = e.target.closest('.province');
         if (provincePath) {
-          if (!provincePath.classList.contains('active')) {
-            provincePath.style.fill = '#cccccc';
-            provincePath.style.stroke = '#999';
-            provincePath.style.strokeWidth = '0.8';
-          }
+          // 取消active状态
+          provincePath.classList.remove('active');
+          // 恢复默认样式
+          provincePath.style.fill = '#cccccc';
+          provincePath.style.stroke = '#999';
+          provincePath.style.strokeWidth = '0.8';
+          // 清空介绍
+          document.getElementById('wikiContent').innerHTML = '<div class="empty-tip">鼠标悬停或点击地图上的省份<br>查看详细介绍</div>';
         }
       });
       

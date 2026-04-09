@@ -527,7 +527,7 @@
       </div>
       
       <!-- 测验模式 -->
-      <div class="mode-card" onclick="window.location.href='quiz.html'">
+      <div class="mode-card" onclick="window.location.href='challenge.html'">
         <div class="mode-icon">✏️</div>
         <h2 class="mode-title" data-lang-key="quiz-mode">挑战模式</h2>
         <p class="mode-description" data-lang-key="quiz-description">根据题目提示，回答对应的省级行政区完整名称</p>
@@ -843,7 +843,7 @@
         <h3 style="margin-bottom: 15px; color: #333;">${translations[language]['messages-title']}</h3>
         ${messageHtml}
         ${adminButtons}
-        <button onclick="this.closest('div[style*=\"z-index: 10000\"]').remove()" style="margin-top: 15px; padding: 8px 16px; background: #c8102e; color: white; border: none; border-radius: 4px; cursor: pointer;">${translations[language]['close']}</button>
+        <button onclick="this.closest('div').parentNode.remove()" style="margin-top: 15px; padding: 8px 16px; background: #c8102e; color: white; border: none; border-radius: 4px; cursor: pointer;">${translations[language]['close']}</button>
       `;
       
       modal.appendChild(modalContent);

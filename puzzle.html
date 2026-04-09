@@ -100,9 +100,11 @@
     .error-tip {
       margin-top: 8px;
       font-size: 14px;
-      height: 20px;
+      min-height: 20px;
       flex: 1;
       width: 100%;
+      text-align: center;
+      padding: 5px;
     }
     /* 主体布局：左中右 */
     .main-content {
@@ -800,6 +802,8 @@
       correctList.appendChild(li);
       // 显示省份介绍
       showProvinceIntro(inputVal);
+      // 检查成就
+      checkAchievements();
       // 检查是否全部答对
       checkAllGuessed();
     });
