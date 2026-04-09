@@ -257,7 +257,6 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       transition: all 0.3s ease;
       z-index: 1000;
-      position: relative;
     }
 
     .notification-badge {
@@ -502,7 +501,10 @@
         <span class="notification-badge" id="messageNotification" style="display: none; position: absolute; top: 10px; right: 10px;">1</span>
       </div>
       <div class="settings-submenu" id="messageSubmenu">
-        <div class="settings-item" onclick="viewMessages()" data-lang-key="view-messages">查看消息</div>
+        <div class="settings-item" onclick="viewMessages()" data-lang-key="view-messages">
+          <span>查看消息</span>
+          <span class="notification-badge" id="viewMessageNotification" style="display: none; position: absolute; top: 10px; right: 10px;">1</span>
+        </div>
         <div class="settings-item" onclick="postMessage()" data-lang-key="post-message">发布消息</div>
       </div>
       
@@ -779,6 +781,7 @@
     // 消息功能
     function viewMessages() {
       const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+      const isAdmin = sessionStorage.getItem('chinaMapAdmin') === 'true';
       let messages = JSON.parse(localStorage.getItem('chinaMapMessages') || '[]');
       
       // 确保每条消息都有read属性
@@ -800,9 +803,16 @@
           messageHtml += '<div style="margin-bottom: 8px; line-height: 1.4;">' + msg.content + '</div>';
           messageHtml += '<div style="font-size: 12px; color: #999; display: flex; justify-content: space-between; align-items: center;">';
           messageHtml += '<span>' + translations[language]['message-time'] + ': ' + msg.time + '</span>';
+          messageHtml += '<div style="display: flex; gap: 10px; align-items: center;">';
           messageHtml += '<button onclick="markMessageAsRead(' + msg.id + ')" style="background: none; border: none; color: ' + (msg.read ? '#52c41a' : '#1890ff') + '; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px;">';
           messageHtml += msg.read ? '✅ 已读' : '☑️ 标记为已读';
           messageHtml += '</button>';
+          if (isAdmin) {
+            messageHtml += '<button onclick="deleteMessage(' + msg.id + ')" style="background: none; border: none; color: #ff4d4f; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 5px;">';
+            messageHtml += '🗑️ 删除';
+            messageHtml += '</button>';
+          }
+          messageHtml += '</div>';
           messageHtml += '</div>';
           messageHtml += '</div>';
         });
@@ -829,10 +839,16 @@
       modalContent.style.maxHeight = '80%';
       modalContent.style.overflowY = 'auto';
       
+      let adminButtons = '';
+      if (isAdmin) {
+        adminButtons = '<button onclick="postMessage()" style="margin-top: 10px; padding: 8px 16px; background: #1890ff; color: white; border: none; border-radius: 4px; cursor: pointer;">📢 发布消息</button>';
+      }
+      
       modalContent.innerHTML = `
         <h3 style="margin-bottom: 15px; color: #333;">${translations[language]['messages-title']}</h3>
         ${messageHtml}
-        <button onclick="this.closest('div').remove()" style="margin-top: 15px; padding: 8px 16px; background: #c8102e; color: white; border: none; border-radius: 4px; cursor: pointer;">${translations[language]['close']}</button>
+        ${adminButtons}
+        <button onclick="this.closest('div').parentNode.remove()" style="margin-top: 15px; padding: 8px 16px; background: #c8102e; color: white; border: none; border-radius: 4px; cursor: pointer;">${translations[language]['close']}</button>
       `;
       
       modal.appendChild(modalContent);
@@ -844,6 +860,25 @@
           modal.remove();
         }
       });
+    }
+    
+    // 删除消息功能
+    function deleteMessage(messageId) {
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+      if (confirm('确定删除这条消息吗？')) {
+        let messages = JSON.parse(localStorage.getItem('chinaMapMessages') || '[]');
+        messages = messages.filter(msg => msg.id !== messageId);
+        localStorage.setItem('chinaMapMessages', JSON.stringify(messages));
+        
+        // 刷新消息列表
+        const modal = document.querySelector('div[style*="z-index: 10000"]');
+        if (modal) {
+          modal.remove();
+        }
+        viewMessages();
+        // 更新通知徽章
+        updateNotificationBadges();
+      }
     }
 
     function markMessageAsRead(messageId) {
@@ -871,15 +906,19 @@
       
       const settingsNotification = document.getElementById('settingsNotification');
       const messageNotification = document.getElementById('messageNotification');
+      const viewMessageNotification = document.getElementById('viewMessageNotification');
       
       if (unreadCount > 0) {
         settingsNotification.style.display = 'flex';
         messageNotification.style.display = 'flex';
+        viewMessageNotification.style.display = 'flex';
         settingsNotification.textContent = unreadCount;
         messageNotification.textContent = unreadCount;
+        viewMessageNotification.textContent = unreadCount;
       } else {
         settingsNotification.style.display = 'none';
         messageNotification.style.display = 'none';
+        viewMessageNotification.style.display = 'none';
       }
     }
 
@@ -915,7 +954,7 @@
         <h3 style="margin-bottom: 15px; color: #333;">${translations[language]['post-message-title']}</h3>
         <textarea id="messageContent" placeholder="${translations[language]['message-placeholder']}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; min-height: 120px; margin-bottom: 15px;"></textarea>
         <div style="display: flex; gap: 10px; justify-content: flex-end;">
-          <button onclick="this.closest('div').remove()" style="padding: 8px 16px; background: #f0f0f0; color: #333; border: none; border-radius: 4px; cursor: pointer;">${translations[language]['cancel']}</button>
+          <button onclick="this.closest('div').parentNode.remove()" style="padding: 8px 16px; background: #f0f0f0; color: #333; border: none; border-radius: 4px; cursor: pointer;">${translations[language]['cancel']}</button>
           <button onclick="submitMessage()" style="padding: 8px 16px; background: #c8102e; color: white; border: none; border-radius: 4px; cursor: pointer;">${translations[language]['submit']}</button>
         </div>
       `;
@@ -958,7 +997,7 @@
       localStorage.setItem('chinaMapMessages', JSON.stringify(messages));
       
       // 关闭模态框
-      document.querySelector('[onclick="submitMessage()"]').closest('div').remove();
+      document.querySelector('[onclick="submitMessage()"]').closest('div').parentNode.remove();
       
       alert(translations[language]['message-posted']);
       
