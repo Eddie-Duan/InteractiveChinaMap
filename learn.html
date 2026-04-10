@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>中国省份交互式问答 - 学习模式</title>
+  <title>中国地图学习模式</title>
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
 
   <style>
     * {
@@ -178,6 +180,9 @@
       font-weight: bold;
       cursor: pointer;
       transition: all 0.3s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .control-btn:hover {
@@ -195,6 +200,23 @@
       display: flex;
       flex-direction: column;
       gap: 5px;
+    }
+    
+    /* 响应式控制按钮布局 */
+    @media screen and (max-width: 576px) {
+      .control-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+      
+      .horizontal-controls {
+        gap: 3px;
+      }
+      
+      .direction-controls {
+        gap: 3px;
+      }
     }
 
     /* 右侧面板 */
@@ -517,12 +539,11 @@
       // 确保地图始终在容器中央，并且不会被遮挡
       chinaMap.style.width = `${svgWidth}px`;
       chinaMap.style.height = `${svgHeight}px`;
-      chinaMap.style.transform = `scale(${zoomScale * scale}) translate(${mapX}px, ${mapY}px)`;
+      chinaMap.style.transform = `translate(-50%, -50%) scale(${zoomScale * scale}) translate(${mapX}px, ${mapY}px)`;
       chinaMap.style.transformOrigin = 'center center';
       chinaMap.style.position = 'absolute';
       chinaMap.style.left = '50%';
       chinaMap.style.top = '50%';
-      chinaMap.style.transform += ' translate(-50%, -50%)';
       chinaMap.style.margin = '0';
     }
 
