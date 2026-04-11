@@ -751,7 +751,7 @@
     // 从后端API获取反馈列表
     async function loadFeedbacksFromAPI() {
       try {
-        const response = await fetch('http://localhost:3001/api/feedbacks');
+        const response = await fetch('/api/feedbacks');
         const feedbacks = await response.json();
         return feedbacks;
       } catch (error) {
@@ -763,7 +763,7 @@
     // 保存反馈到后端API
     async function saveFeedbackToAPI(feedbackData) {
       try {
-        const response = await fetch('http://localhost:3001/api/save-feedback', {
+        const response = await fetch('/api/save-feedback', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

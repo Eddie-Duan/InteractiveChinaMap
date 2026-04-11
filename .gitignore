@@ -1,0 +1,11 @@
+# 依赖包
+node_modules/
+
+# 环境变量文件
+.env
+
+# 日志文件
+*.log
+
+# 本地存储的反馈数据
+backend/feedback/
