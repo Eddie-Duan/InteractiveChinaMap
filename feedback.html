@@ -748,7 +748,37 @@
       });
     }
 
-    document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+    // 从后端API获取反馈列表
+    async function loadFeedbacksFromAPI() {
+      try {
+        const response = await fetch('http://localhost:3001/api/feedbacks');
+        const feedbacks = await response.json();
+        return feedbacks;
+      } catch (error) {
+        console.error('从API加载反馈失败:', error);
+        return null;
+      }
+    }
+
+    // 保存反馈到后端API
+    async function saveFeedbackToAPI(feedbackData) {
+      try {
+        const response = await fetch('http://localhost:3001/api/save-feedback', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(feedbackData)
+        });
+        const result = await response.json();
+        return result.success;
+      } catch (error) {
+        console.error('保存反馈到API失败:', error);
+        return false;
+      }
+    }
+
+    document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
 
@@ -785,6 +815,10 @@
         comments: []
       };
 
+      // 保存到后端API
+      const apiSuccess = await saveFeedbackToAPI(feedback);
+
+      // 同时保存到localStorage作为备份
       let feedbacks = JSON.parse(localStorage.getItem('chinaMapFeedbacks') || '[]');
       feedbacks.unshift(feedback);
 
@@ -821,11 +855,22 @@
       el.textContent = msg;
     }
 
-    function loadRecords() {
+    // 加载反馈记录
+    async function loadRecords() {
       const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
-      const feedbacks = JSON.parse(localStorage.getItem('chinaMapFeedbacks') || '[]');
       const list = document.getElementById('recordsList');
       const noRecords = document.getElementById('noRecords');
+
+      // 优先从后端API加载
+      const apiFeedbacks = await loadFeedbacksFromAPI();
+      let feedbacks = [];
+
+      if (apiFeedbacks && apiFeedbacks.length > 0) {
+        feedbacks = apiFeedbacks;
+      } else {
+        // API加载失败，回退到localStorage
+        feedbacks = JSON.parse(localStorage.getItem('chinaMapFeedbacks') || '[]');
+      }
 
       if (feedbacks.length === 0) {
         list.innerHTML = '';
@@ -1011,8 +1056,6 @@
       if (e.key === 'Escape') closeLightbox();
     });
 
-    loadRecords();
-
     // 禁用 F12
     document.addEventListener('keydown', function(e) {
       if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.key === 'U')) {
@@ -1071,6 +1114,7 @@
     // 页面加载时应用语言
     window.addEventListener('load', function() {
       applyLanguage();
+      loadRecords();
     });
   </script>
 </body>
