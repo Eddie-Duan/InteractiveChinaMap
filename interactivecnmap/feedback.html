@@ -468,6 +468,11 @@
         <div class="form-group">
           <label for="userName" data-lang-key="name-label">您的姓名/昵称（选填）</label>
           <input type="text" id="userName" placeholder="感谢您的宝贵建议" data-lang-key="name-placeholder">
+          <div style="margin-top: 8px; display: flex; align-items: center;">
+            <button type="button" onclick="useLoginName()" style="padding: 6px 12px; background: #f0f0f0; color: #333; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all 0.3s ease;">
+              <span data-lang-key="use-login-name">使用登录时的名字</span>
+            </button>
+          </div>
         </div>  
         <div class="form-group">
           <label for="feedbackType" data-lang-key="feedback-type-label">反馈类型</label>
@@ -544,6 +549,7 @@
         'feedback-subtitle': '请告诉我们您的意见',
         'name-label': '您的姓名/昵称（选填）',
         'name-placeholder': '感谢您的宝贵建议',
+        'use-login-name': '使用登录时的名字',
         'feedback-type-label': '反馈类型',
         'select-feedback-type': '请选择反馈类型',
         'bug-type': '功能 bug',
@@ -590,6 +596,7 @@
         'feedback-subtitle': 'Please tell us your opinions',
         'name-label': 'Your name/nickname (optional)',
         'name-placeholder': 'Thank you for your valuable suggestions',
+        'use-login-name': 'Use login name',
         'feedback-type-label': 'Feedback Type',
         'select-feedback-type': 'Please select feedback type',
         'bug-type': 'Function bug',
@@ -1109,6 +1116,18 @@
         console.error('复制失败:', err);
         alert('复制失败，请手动复制邮箱地址');
       });
+    }
+
+    // 使用登录时的名字
+    function useLoginName() {
+      const userInfo = localStorage.getItem('chinaMapUser');
+      if (userInfo) {
+        const user = JSON.parse(userInfo);
+        document.getElementById('userName').value = user.name;
+      } else {
+        const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+        alert(language === 'zh-CN' ? '您尚未登录，请先登录' : 'You have not logged in, please log in first');
+      }
     }
 
     // 页面加载时应用语言

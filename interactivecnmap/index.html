@@ -220,8 +220,23 @@
       color: #40a9ff;
       text-decoration: underline;
     }
+
+    .admin-users-btn {
+      font-size: 14px;
+      color: #1890ff;
+      cursor: pointer;
+      display: block;
+      text-align: right;
+      margin-top: 2px;
+      transition: color 0.3s ease;
+    }
+
+    .admin-users-btn:hover {
+      color: #40a9ff;
+      text-decoration: underline;
+    }
     
-    .admin-modal-overlay {
+    .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
@@ -234,11 +249,11 @@
       z-index: 10001;
     }
     
-    .admin-modal-overlay.active {
+    .modal-overlay.active {
       display: flex;
     }
     
-    .admin-modal {
+    .modal {
       background: #fff;
       border-radius: 12px;
       padding: 30px;
@@ -247,13 +262,13 @@
       text-align: center;
     }
     
-    .admin-modal h3 {
+    .modal h3 {
       font-size: 18px;
       color: #333;
       margin-bottom: 20px;
     }
     
-    .admin-modal input {
+    .modal input {
       width: 100%;
       padding: 12px;
       border: 2px solid #ddd;
@@ -264,17 +279,17 @@
       margin-bottom: 15px;
     }
     
-    .admin-modal input:focus {
+    .modal input:focus {
       border-color: #c8102e;
     }
     
-    .admin-modal .modal-btns {
+    .modal .modal-btns {
       display: flex;
       gap: 10px;
       justify-content: center;
     }
     
-    .admin-modal .modal-btn {
+    .modal .modal-btn {
       padding: 10px 24px;
       border: none;
       border-radius: 8px;
@@ -301,11 +316,47 @@
       background: #e0e0e0;
     }
     
-    .admin-error {
+    .modal-error {
       color: #ff4d4f;
       font-size: 13px;
       margin-bottom: 10px;
       display: none;
+    }
+
+    .modal-note {
+      font-size: 12px;
+      color: #999;
+      margin-top: 10px;
+      text-align: left;
+    }
+
+    .users-modal {
+      width: 500px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .users-list {
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .user-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .user-name {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .user-time {
+      font-size: 12px;
+      color: #999;
     }
     
     @keyframes fadeInDown {
@@ -333,6 +384,7 @@
       .main-title { font-size: 36px; }
       .china-image { max-width: 90%; }
       .start-button { padding: 15px 40px; font-size: 18px; }
+      .modal, .users-modal { width: 90%; }
     }
   </style>
 </head>
@@ -355,7 +407,7 @@
     </div>
     
     <div class="button-section">
-      <button class="start-button" onclick="window.location.href='mode.html'">开启中国之旅</button>
+      <button class="start-button" onclick="openLoginModal()">开启中国之旅</button>
     </div>
     
     <div class="footer">
@@ -366,17 +418,46 @@
   <span class="admin-link" id="adminLink" onclick="openAdminModal()">管理员入口</span>
   <div class="admin-status-container">
     <span class="admin-status" id="adminStatus">✅ 管理员已登录</span>
+    <span class="admin-users-btn" id="adminUsersBtn" onclick="openUsersModal()">已登录用户</span>
     <span class="admin-logout" id="adminLogout" onclick="adminLogout()">退出管理员模式</span>
   </div>
 
-  <div class="admin-modal-overlay" id="adminModal">
-    <div class="admin-modal">
-      <h3>🔐 管理员登录</h3>
-      <div class="admin-error" id="adminError">密码错误</div>
+  <!-- 登录模态框 -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal">
+      <h3 id="loginModalTitle">🔐 用户登录</h3>
+      <div class="modal-error" id="loginError">请输入姓名/昵称</div>
+      <input type="text" id="userName" placeholder="请输入姓名/昵称" autocomplete="off">
+      <div class="modal-note" id="loginNote">数据仅保存在本地，不要包含隐私信息</div>
+      <div class="modal-btns">
+        <button class="modal-btn cancel" onclick="closeLoginModal()">取消</button>
+        <button class="modal-btn confirm" onclick="userLogin()">开始探索</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 管理员登录模态框 -->
+  <div class="modal-overlay" id="adminModal">
+    <div class="modal">
+      <h3 id="adminModalTitle">🔐 管理员登录</h3>
+      <div class="modal-error" id="adminError">密码错误</div>
       <input type="password" id="adminPassword" placeholder="请输入管理员密码" autocomplete="off">
       <div class="modal-btns">
         <button class="modal-btn cancel" onclick="closeAdminModal()">取消</button>
         <button class="modal-btn confirm" onclick="adminLogin()">登录</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 已登录用户模态框 -->
+  <div class="modal-overlay" id="usersModal">
+    <div class="modal users-modal">
+      <h3 id="usersModalTitle">👥 已登录用户</h3>
+      <div class="users-list" id="usersList">
+        <!-- 用户列表将通过JavaScript动态生成 -->
+      </div>
+      <div class="modal-btns">
+        <button class="modal-btn confirm" onclick="closeUsersModal()">关闭</button>
       </div>
     </div>
   </div>
@@ -397,7 +478,15 @@
         'login-button': '登录',
         'admin-error': '密码错误',
         'developer-tools-disabled': '开发者工具已禁用',
-        'right-click-disabled': '右键菜单已禁用'
+        'right-click-disabled': '右键菜单已禁用',
+        'login-modal-title': '🔐 用户登录',
+        'login-placeholder': '请输入姓名/昵称',
+        'login-note': '数据仅保存在本地，不要包含隐私信息',
+        'login-error': '请输入姓名/昵称',
+        'start-exploring': '开始探索',
+        'users-modal-title': '👥 已登录用户',
+        'admin-users-btn': '已登录用户',
+        'close-button': '关闭'
       },
       'en': {
         'main-title': 'Interactive China Map',
@@ -412,7 +501,15 @@
         'login-button': 'Login',
         'admin-error': 'Password error',
         'developer-tools-disabled': 'Developer tools disabled',
-        'right-click-disabled': 'Right-click menu disabled'
+        'right-click-disabled': 'Right-click menu disabled',
+        'login-modal-title': '🔐 User Login',
+        'login-placeholder': 'Please enter your name/nickname',
+        'login-note': 'Data is only stored locally, do not include private information',
+        'login-error': 'Please enter name/nickname',
+        'start-exploring': 'Start Exploring',
+        'users-modal-title': '👥 Logged in Users',
+        'admin-users-btn': 'Logged in Users',
+        'close-button': 'Close'
       }
     };
 
@@ -445,13 +542,26 @@
       document.querySelector('.footer p').textContent = translations[validLanguage]['footer'];
       document.querySelector('.admin-link').textContent = translations[validLanguage]['admin-link'];
       document.querySelector('.admin-status').textContent = translations[validLanguage]['admin-status'];
+      document.querySelector('.admin-users-btn').textContent = translations[validLanguage]['admin-users-btn'];
+      
+      // 更新登录模态框
+      document.querySelector('#loginModalTitle').textContent = translations[validLanguage]['login-modal-title'];
+      document.querySelector('#userName').placeholder = translations[validLanguage]['login-placeholder'];
+      document.querySelector('#loginNote').textContent = translations[validLanguage]['login-note'];
+      document.querySelector('#loginError').textContent = translations[validLanguage]['login-error'];
+      document.querySelectorAll('#loginModal .modal-btn')[0].textContent = translations[validLanguage]['cancel-button'];
+      document.querySelectorAll('#loginModal .modal-btn')[1].textContent = translations[validLanguage]['start-exploring'];
       
       // 更新管理员模态框
-      document.querySelector('.admin-modal h3').textContent = translations[validLanguage]['admin-modal-title'];
+      document.querySelector('#adminModalTitle').textContent = translations[validLanguage]['admin-modal-title'];
       document.querySelector('#adminPassword').placeholder = translations[validLanguage]['admin-password-placeholder'];
-      document.querySelectorAll('.modal-btn')[0].textContent = translations[validLanguage]['cancel-button'];
-      document.querySelectorAll('.modal-btn')[1].textContent = translations[validLanguage]['login-button'];
+      document.querySelectorAll('#adminModal .modal-btn')[0].textContent = translations[validLanguage]['cancel-button'];
+      document.querySelectorAll('#adminModal .modal-btn')[1].textContent = translations[validLanguage]['login-button'];
       document.querySelector('#adminError').textContent = translations[validLanguage]['admin-error'];
+      
+      // 更新已登录用户模态框
+      document.querySelector('#usersModalTitle').textContent = translations[validLanguage]['users-modal-title'];
+      document.querySelectorAll('#usersModal .modal-btn')[0].textContent = translations[validLanguage]['close-button'];
     }
 
     window.addEventListener('load', function() {
@@ -553,6 +663,121 @@
       e.preventDefault();
       const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
       alert(translations[language]['right-click-disabled']);
+    });
+
+    // 登录相关函数
+    function openLoginModal() {
+      document.getElementById('loginModal').classList.add('active');
+      document.getElementById('userName').value = '';
+      document.getElementById('loginError').style.display = 'none';
+      setTimeout(() => document.getElementById('userName').focus(), 100);
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.remove('active');
+    }
+
+    function userLogin() {
+      const userName = document.getElementById('userName').value.trim();
+      if (!userName) {
+        document.getElementById('loginError').style.display = 'block';
+        return;
+      }
+
+      // 保存用户信息到本地存储
+      const userInfo = {
+        name: userName,
+        loginTime: new Date().toISOString()
+      };
+      localStorage.setItem('chinaMapUser', JSON.stringify(userInfo));
+
+      // 发送用户登录信息到服务器
+      fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userInfo)
+      }).catch(error => {
+        console.error('保存登录信息到服务器失败:', error);
+      });
+
+      closeLoginModal();
+      window.location.href = 'mode.html';
+    }
+
+    // 已登录用户相关函数
+    function openUsersModal() {
+      document.getElementById('usersModal').classList.add('active');
+      loadUsers();
+    }
+
+    function closeUsersModal() {
+      document.getElementById('usersModal').classList.remove('active');
+    }
+
+    function loadUsers() {
+      const usersList = document.getElementById('usersList');
+      usersList.innerHTML = '<p style="text-align: center; color: #666;">加载中...</p>';
+
+      fetch('/api/users')
+        .then(response => response.json())
+        .then(users => {
+          if (users && users.length > 0) {
+            usersList.innerHTML = '';
+            users.forEach(user => {
+              const userItem = document.createElement('div');
+              userItem.className = 'user-item';
+              userItem.innerHTML = `
+                <span class="user-name">${user.name}</span>
+                <span class="user-time">${new Date(user.loginTime).toLocaleString()}</span>
+              `;
+              usersList.appendChild(userItem);
+            });
+          } else {
+            usersList.innerHTML = '<p style="text-align: center; color: #666;">暂无登录用户</p>';
+          }
+        })
+        .catch(error => {
+          console.error('加载用户列表失败:', error);
+          usersList.innerHTML = '<p style="text-align: center; color: #ff4d4f;">加载失败</p>';
+        });
+    }
+
+    // 检查用户登录状态
+    function checkUserStatus() {
+      const userInfo = localStorage.getItem('chinaMapUser');
+      if (userInfo) {
+        // 用户已登录
+        console.log('用户已登录:', JSON.parse(userInfo));
+      }
+    }
+
+    // 为登录模态框添加键盘事件
+    document.getElementById('userName').addEventListener('keyup', function(e) {
+      if (e.key === 'Enter') userLogin();
+    });
+
+    // 为模态框添加点击外部关闭功能
+    document.getElementById('loginModal').addEventListener('click', function(e) {
+      if (e.target === this) closeLoginModal();
+    });
+
+    document.getElementById('usersModal').addEventListener('click', function(e) {
+      if (e.target === this) closeUsersModal();
+    });
+
+    // 为Escape键添加关闭模态框功能
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeLoginModal();
+        closeUsersModal();
+      }
+    });
+
+    // 页面加载时检查用户登录状态
+    window.addEventListener('load', function() {
+      checkUserStatus();
     });
   </script>
 </body>
