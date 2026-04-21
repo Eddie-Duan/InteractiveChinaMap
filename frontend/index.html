@@ -633,6 +633,8 @@
         sessionStorage.setItem('chinaMapAdmin', 'true');
         closeAdminModal();
         checkAdminStatus();
+        // 管理员登录后直接跳转到mode.html
+        window.location.href = 'mode.html';
       } else {
         document.getElementById('adminError').style.display = 'block';
         document.getElementById('adminPassword').value = '';

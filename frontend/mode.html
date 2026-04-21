@@ -473,6 +473,11 @@
 </head>
 <body>
   <div class="login-container">
+    <!-- 问候语 -->
+    <div style="position: absolute; top: 20px; left: 20px; font-size: 18px; font-weight: bold; color: #333; z-index: 1000;">
+      <span id="greeting">您好，访客</span>
+    </div>
+    
     <!-- 设置按钮 -->
     <button class="settings-button" id="settingsButton">⚙️<span class="notification-badge" id="settingsNotification" style="display: none;">1</span></button>
     
@@ -1009,11 +1014,39 @@
       }
     }
 
+    // 更新问候语
+    function updateGreeting() {
+      const greetingElement = document.getElementById('greeting');
+      if (!greetingElement) return;
+      
+      const isAdmin = sessionStorage.getItem('chinaMapAdmin') === 'true';
+      if (isAdmin) {
+        greetingElement.textContent = '您好，管理员';
+        return;
+      }
+      
+      const userInfo = localStorage.getItem('chinaMapUser');
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          if (user.name) {
+            greetingElement.textContent = `您好，${user.name}`;
+            return;
+          }
+        } catch (e) {
+          console.error('解析用户信息失败:', e);
+        }
+      }
+      
+      greetingElement.textContent = '您好，访客';
+    }
+
     // 页面加载时应用主题和语言
     window.addEventListener('load', function() {
       applyTheme();
       applyLanguage();
       updateNotificationBadges();
+      updateGreeting();
     });
 
     // 系统主题变化时更新
