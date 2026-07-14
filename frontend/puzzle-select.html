@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中国地图 - 拼图模式选择</title>
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      width: 100%;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .title {
+      font-size: 42px;
+      font-weight: bold;
+      color: #c8102e;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      font-family: "黄山毛峰书法体", serif;
+      letter-spacing: 8px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      color: #666;
+    }
+
+    .mode-selector {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .mode-card {
+      background: #fff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .mode-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 16px 32px rgba(0,0,0,0.18);
+    }
+
+    .mode-icon {
+      font-size: 72px;
+      margin-bottom: 20px;
+    }
+
+    .mode-title {
+      font-size: 26px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 12px;
+    }
+
+    .mode-description {
+      font-size: 15px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .back-btn {
+      display: block;
+      margin: 0 auto;
+      padding: 12px 30px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #606260;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .back-btn:hover {
+      background: #4e5969;
+    }
+
+    @media screen and (max-width: 992px) {
+      .mode-selector {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media screen and (max-width: 576px) {
+      .title {
+        font-size: 32px;
+        letter-spacing: 4px;
+      }
+
+      .mode-card {
+        padding: 30px;
+      }
+
+      .mode-icon {
+        font-size: 56px;
+      }
+
+      .mode-title {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title" data-lang-key="puzzle-select-title">拼图模式选择</h1>
+      <p class="subtitle" data-lang-key="puzzle-select-subtitle">选择您想要的拼图模式</p>
+    </div>
+
+    <div class="mode-selector">
+      <!-- 省份拼图 -->
+      <div class="mode-card" onclick="window.location.href='province-puzzle.html'">
+        <div class="mode-icon">🧭</div>
+        <h2 class="mode-title" data-lang-key="province-puzzle-title">省份拼图</h2>
+        <p class="mode-description" data-lang-key="province-puzzle-desc">输入省级行政区完整名称来完成地图拼图，了解中国34个省级行政区的地理知识</p>
+      </div>
+
+      <!-- 城市拼图 -->
+      <div class="mode-card" onclick="window.location.href='city-puzzle.html'">
+        <div class="mode-icon">🌃</div>
+        <h2 class="mode-title" data-lang-key="city-puzzle-title">城市拼图</h2>
+        <p class="mode-description" data-lang-key="city-puzzle-desc">输入市级行政区完整名称来完成地图拼图，挑战更高难度，认识中国的主要城市</p>
+      </div>
+    </div>
+
+    <button class="back-btn" onclick="location.href='mode.html'" data-lang-key="back-to-mode">返回模式选择</button>
+  </div>
+
+  <script>
+    const translations = {
+      'zh-CN': {
+        'puzzle-select-title': '拼图模式选择',
+        'puzzle-select-subtitle': '选择您想要的拼图模式',
+        'province-puzzle-title': '省份拼图',
+        'province-puzzle-desc': '输入省级行政区完整名称来完成地图拼图，了解中国34个省级行政区的地理知识',
+        'city-puzzle-title': '城市拼图',
+        'city-puzzle-desc': '输入市级行政区完整名称来完成地图拼图，挑战更高难度，认识中国的主要城市',
+        'back-to-mode': '返回模式选择'
+      },
+      'en': {
+        'puzzle-select-title': 'Puzzle Mode Selection',
+        'puzzle-select-subtitle': 'Choose your desired puzzle mode',
+        'province-puzzle-title': 'Province Puzzle',
+        'province-puzzle-desc': 'Enter the full name of a provincial administrative region to complete the map puzzle and learn about China\'s 34 provincial-level administrative regions',
+        'city-puzzle-title': 'City Puzzle',
+        'city-puzzle-desc': 'Enter the full name of a prefecture-level city to complete the map puzzle, challenge yourself, and get to know China\'s major cities',
+        'back-to-mode': 'Back to Mode Selection'
+      }
+    };
+
+    function setLanguage(lang) {
+      localStorage.setItem('mapQuizLanguage', lang);
+      applyLanguage();
+    }
+
+    function applyLanguage() {
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+      const t = translations[language] || translations['zh-CN'];
+      
+      document.querySelectorAll('[data-lang-key]').forEach(el => {
+        const key = el.dataset.langKey;
+        if (t[key]) {
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.placeholder = t[key];
+          } else {
+            el.textContent = t[key];
+          }
+        }
+      });
+    }
+
+    window.addEventListener('load', function() {
+      applyLanguage();
+      document.body.style.opacity = '0';
+      document.body.style.transition = 'opacity 0.5s ease';
+      setTimeout(() => {
+        document.body.style.opacity = '1';
+      }, 100);
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        window.location.href = 'mode.html';
+      }
+    });
+  </script>
+</body>
+</html>

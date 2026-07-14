@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>热门统计 - 交互式中国地图</title>
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: clamp(28px, 6vw, 48px);
+      font-weight: bold;
+      color: #c8102e;
+      font-family: "黄山毛峰书法体", serif;
+      letter-spacing: 4px;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .stats-section {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+      padding-left: 15px;
+      border-left: 4px solid #c8102e;
+    }
+
+    .stats-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px 20px;
+      border: 2px solid #e4e7ed;
+      border-radius: 10px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      color: #666;
+    }
+
+    .tab-btn:hover {
+      border-color: #c8102e;
+      color: #c8102e;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #c8102e, #ff6b6b);
+      border-color: #c8102e;
+      color: #fff;
+    }
+
+    .stats-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stat-row {
+      display: flex;
+      align-items: center;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 12px;
+      border: 1px solid #e4e7ed;
+      transition: all 0.3s ease;
+    }
+
+    .stat-row:hover {
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transform: translateX(5px);
+    }
+
+    .stat-rank {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+      margin-right: 15px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .stat-rank.gold {
+      background: linear-gradient(135deg, #ffd700, #ffaa00);
+      color: #fff;
+      font-size: 18px;
+    }
+
+    .stat-rank.silver {
+      background: linear-gradient(135deg, #c0c0c0, #a0a0a0);
+      color: #fff;
+    }
+
+    .stat-rank.bronze {
+      background: linear-gradient(135deg, #cd7f32, #b87333);
+      color: #fff;
+    }
+
+    .stat-rank.normal {
+      background: #e4e7ed;
+      color: #666;
+    }
+
+    .stat-info {
+      flex: 1;
+    }
+
+    .stat-name {
+      font-weight: bold;
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 4px;
+    }
+
+    .stat-type {
+      font-size: 12px;
+      color: #999;
+    }
+
+    .stat-bar-container {
+      width: 150px;
+      height: 20px;
+      background: #e4e7ed;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 0 15px;
+      flex-shrink: 0;
+    }
+
+    .stat-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #c8102e, #ff6b6b);
+      border-radius: 10px;
+      transition: width 0.8s ease;
+    }
+
+    .stat-count {
+      font-weight: bold;
+      font-size: 18px;
+      color: #c8102e;
+      min-width: 50px;
+      text-align: right;
+    }
+
+    .summary-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .summary-card {
+      background: linear-gradient(135deg, #fff 0%, #f5f7fa 100%);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      border: 1px solid #e4e7ed;
+    }
+
+    .summary-card .icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .summary-card .value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #c8102e;
+    }
+
+    .summary-card .label {
+      font-size: 13px;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    .empty-state .icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    .loading::after {
+      content: '';
+      animation: dots 1.5s infinite;
+    }
+
+    @keyframes dots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+
+    .refresh-btn {
+      display: block;
+      margin: 20px auto 0;
+      padding: 10px 30px;
+      font-size: 14px;
+      border: 2px solid #c8102e;
+      border-radius: 20px;
+      background: transparent;
+      color: #c8102e;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .refresh-btn:hover {
+      background: #c8102e;
+      color: #fff;
+    }
+
+    .back-btn {
+      display: block;
+      margin: 30px auto 0;
+      padding: 12px 40px;
+      font-size: 16px;
+      border: none;
+      border-radius: 25px;
+      background: linear-gradient(90deg, #606266, #909399);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background: linear-gradient(90deg, #4e5969, #606266);
+      transform: translateY(-2px);
+    }
+
+    @media screen and (max-width: 600px) {
+      .stat-bar-container {
+        display: none;
+      }
+      .stat-row {
+        flex-wrap: wrap;
+      }
+      .stat-count {
+        width: 100%;
+        text-align: left;
+        margin-top: 10px;
+        padding-left: 51px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 热门统计</h1>
+      <p>了解用户最关注的省份和城市</p>
+    </div>
+
+    <div class="stats-section">
+      <div class="summary-cards" id="summaryCards">
+        <div class="loading">正在加载数据</div>
+      </div>
+    </div>
+
+    <div class="stats-section">
+      <div class="section-title">🏆 省份热度排行</div>
+      <div class="stats-tabs">
+        <button class="tab-btn active" onclick="switchTab('province')">省份</button>
+        <button class="tab-btn" onclick="switchTab('city')">城市</button>
+      </div>
+      <div class="stats-list" id="statsList">
+        <div class="loading">正在加载数据</div>
+      </div>
+    </div>
+
+    <button class="refresh-btn" onclick="loadStats()">🔄 刷新数据</button>
+    <button class="back-btn" onclick="location.href='mode.html'">返回主页</button>
+  </div>
+
+  <script>
+    let currentTab = 'province';
+    let allStats = [];
+
+    async function loadStats() {
+      try {
+        const response = await fetch('/api/puzzle-stats');
+        allStats = await response.json();
+        updateSummary();
+        renderStats();
+      } catch (error) {
+        console.error('加载统计数据失败:', error);
+        document.getElementById('statsList').innerHTML = `
+          <div class="empty-state">
+            <div class="icon">❌</div>
+            <p>加载数据失败，请稍后重试</p>
+          </div>
+        `;
+      }
+    }
+
+    function updateSummary() {
+      const provinceStats = allStats.filter(s => s.type === 'province');
+      const cityStats = allStats.filter(s => s.type === 'city');
+      const totalInteractions = allStats.reduce((sum, s) => sum + s.count, 0);
+      const uniqueProvinces = provinceStats.length;
+      const uniqueCities = cityStats.length;
+
+      document.getElementById('summaryCards').innerHTML = `
+        <div class="summary-card">
+          <div class="icon">🎯</div>
+          <div class="value">${totalInteractions}</div>
+          <div class="label">总互动次数</div>
+        </div>
+        <div class="summary-card">
+          <div class="icon">🗺️</div>
+          <div class="value">${uniqueProvinces}</div>
+          <div class="label">互动省份数</div>
+        </div>
+        <div class="summary-card">
+          <div class="icon">🏙️</div>
+          <div class="value">${uniqueCities}</div>
+          <div class="label">互动城市数</div>
+        </div>
+        <div class="summary-card">
+          <div class="icon">🔥</div>
+          <div class="value">${provinceStats.length > 0 ? provinceStats[0].name : '-'}</div>
+          <div class="label">最热门省份</div>
+        </div>
+      `;
+    }
+
+    function renderStats() {
+      const filtered = allStats.filter(s => s.type === currentTab);
+      const list = document.getElementById('statsList');
+
+      if (filtered.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📭</div>
+            <p>暂无${currentTab === 'province' ? '省份' : '城市'}数据</p>
+            <p style="font-size: 12px; margin-top: 10px;">开始拼图挑战来贡献数据吧！</p>
+          </div>
+        `;
+        return;
+      }
+
+      const maxCount = Math.max(...filtered.map(s => s.count));
+
+      list.innerHTML = filtered
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 20)
+        .map((stat, index) => {
+          const rank = index + 1;
+          let rankClass = 'normal';
+          if (rank === 1) rankClass = 'gold';
+          else if (rank === 2) rankClass = 'silver';
+          else if (rank === 3) rankClass = 'bronze';
+
+          const barWidth = (stat.count / maxCount) * 100;
+          const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+
+          return `
+            <div class="stat-row">
+              <div class="stat-rank ${rankClass}">${medal || rank}</div>
+              <div class="stat-info">
+                <div class="stat-name">${stat.name}</div>
+                <div class="stat-type">${currentTab === 'province' ? '省份' : '城市'}</div>
+              </div>
+              <div class="stat-bar-container">
+                <div class="stat-bar" style="width: ${barWidth}%"></div>
+              </div>
+              <div class="stat-count">${stat.count}</div>
+            </div>
+          `;
+        }).join('');
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', (tab === 'province' && i === 0) || (tab === 'city' && i === 1));
+      });
+      renderStats();
+    }
+
+    document.addEventListener('DOMContentLoaded', loadStats);
+  </script>
+</body>
+</html>

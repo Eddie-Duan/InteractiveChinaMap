@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Achievement System - Interactive China Map</title>
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: clamp(28px, 6vw, 48px);
+      font-weight: bold;
+      color: #c8102e;
+      font-family: "黄山毛峰书法体", serif;
+      letter-spacing: 4px;
+      margin-bottom: 10px;
+    }
+
+    .stats-overview {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 25px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 15px;
+      background: linear-gradient(135deg, #fff 0%, #f5f7fa 100%);
+      border-radius: 12px;
+      border: 1px solid #eee;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #c8102e;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 15px;
+      padding-left: 15px;
+      border-left: 4px solid #c8102e;
+    }
+
+    .achievement-section {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    }
+
+    .achievement-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 15px;
+    }
+
+    .achievement-card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+      border: 2px solid #e4e7ed;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .achievement-card.achieved {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e8f4ff 100%);
+      border-color: #409eff;
+      box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+    }
+
+    .achievement-card.achieved::before {
+      content: '✓';
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 24px;
+      height: 24px;
+      background: #52c41a;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .achievement-icon {
+      font-size: 42px;
+      margin-bottom: 12px;
+      transition: transform 0.3s ease;
+    }
+
+    .achievement-card:hover .achievement-icon {
+      transform: scale(1.15);
+    }
+
+    .achievement-card.achieved .achievement-icon {
+      filter: drop-shadow(0 2px 4px rgba(64, 158, 255, 0.4));
+    }
+
+    .achievement-card:not(.achieved) .achievement-icon {
+      filter: grayscale(100%);
+      opacity: 0.5;
+    }
+
+    .achievement-title {
+      font-size: 15px;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #333;
+    }
+
+    .achievement-card.achieved .achievement-title {
+      color: #409eff;
+    }
+
+    .achievement-card:not(.achieved) .achievement-title {
+      color: #909399;
+    }
+
+    .achievement-desc {
+      font-size: 12px;
+      color: #666;
+      line-height: 1.4;
+      margin-bottom: 10px;
+    }
+
+    .progress-bar {
+      height: 6px;
+      background: #e4e7ed;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #409eff, #66b1ff);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .achievement-card:not(.achieved) .progress-fill {
+      background: linear-gradient(90deg, #c0c4cc, #dcdfe6);
+    }
+
+    .achievement-card.achieved .progress-fill {
+      background: linear-gradient(90deg, #52c41a, #73d13d);
+    }
+
+    .progress-text {
+      font-size: 11px;
+      color: #909399;
+      margin-top: 5px;
+    }
+
+    .back-btn {
+      display: block;
+      margin: 30px auto 0;
+      padding: 12px 40px;
+      font-size: 16px;
+      border: none;
+      border-radius: 25px;
+      background: linear-gradient(90deg, #606266, #909399);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background: linear-gradient(90deg, #4e5969, #606266);
+      transform: translateY(-2px);
+    }
+
+    .achievement-new {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: #ff4d4f;
+      color: white;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: bold;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .admin-stats {
+      background: linear-gradient(135deg, #fff7e6 0%, #fff2e6 100%);
+      border: 1px solid #ffbb33;
+      margin-top: 20px;
+    }
+
+    .admin-stats .section-title {
+      color: #fa8c16;
+      border-left-color: #fa8c16;
+    }
+
+    .rank-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .gpa-leaderboard {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e8f4ff 100%);
+      border: 1px solid #409eff;
+    }
+
+    .gpa-leaderboard .section-title {
+      color: #409eff;
+      border-left-color: #409eff;
+    }
+
+    .leaderboard-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .leaderboard-header {
+      display: grid;
+      grid-template-columns: 60px 1fr 100px 80px;
+      gap: 10px;
+      padding: 10px 15px;
+      background: rgba(64, 158, 255, 0.1);
+      border-radius: 8px;
+      font-weight: bold;
+      color: #409eff;
+      font-size: 14px;
+    }
+
+    .leaderboard-row {
+      display: grid;
+      grid-template-columns: 60px 1fr 100px 80px;
+      gap: 10px;
+      padding: 12px 15px;
+      background: white;
+      border-radius: 10px;
+      align-items: center;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+
+    .leaderboard-row:hover {
+      transform: translateX(5px);
+      border-color: #409eff;
+      box-shadow: 0 4px 12px rgba(64, 158, 255, 0.2);
+    }
+
+    .leaderboard-row.current-user {
+      background: linear-gradient(135deg, #fff7e6, #fff2e6);
+      border-color: #ffbb33;
+    }
+
+    .leaderboard-row.current-user:hover {
+      border-color: #ff8800;
+    }
+
+    .rank-badge {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+      border-radius: 50%;
+    }
+
+    .rank-badge.gold {
+      background: linear-gradient(135deg, #ffd700, #ffaa00);
+      color: white;
+      box-shadow: 0 2px 8px rgba(255, 170, 0, 0.4);
+    }
+
+    .rank-badge.silver {
+      background: linear-gradient(135deg, #c0c0c0, #a8a8a8);
+      color: white;
+      box-shadow: 0 2px 8px rgba(168, 168, 168, 0.4);
+    }
+
+    .rank-badge.bronze {
+      background: linear-gradient(135deg, #cd7f32, #b87333);
+      color: white;
+      box-shadow: 0 2px 8px rgba(184, 115, 51, 0.4);
+    }
+
+    .rank-badge.normal {
+      background: #f0f0f0;
+      color: #666;
+    }
+
+    .user-name {
+      font-weight: 500;
+      color: #333;
+      font-size: 15px;
+    }
+
+    .gpa-value {
+      font-weight: bold;
+      color: #c8102e;
+      font-size: 18px;
+    }
+
+    .accuracy-value {
+      color: #666;
+      font-size: 13px;
+    }
+
+    .your-rank {
+      margin-top: 20px;
+      padding: 15px 20px;
+      background: linear-gradient(135deg, #fff7e6, #fff2e6);
+      border: 2px solid #ffbb33;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .your-rank-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .your-rank-label {
+      color: #fa8c16;
+      font-weight: bold;
+    }
+
+    .your-rank-value {
+      font-size: 20px;
+      font-weight: bold;
+      color: #c8102e;
+    }
+
+    .your-gpa {
+      text-align: right;
+    }
+
+    .your-gpa-label {
+      color: #666;
+      font-size: 12px;
+    }
+
+    .your-gpa-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #409eff;
+    }
+
+    @media screen and (max-width: 600px) {
+      .leaderboard-header {
+        grid-template-columns: 50px 1fr 80px;
+        font-size: 12px;
+      }
+      .leaderboard-row {
+        grid-template-columns: 50px 1fr 80px;
+        padding: 10px 12px;
+      }
+      .accuracy-value {
+        display: none;
+      }
+    }
+
+    .rank-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 15px;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid #ffe7b3;
+    }
+
+    .rank-number {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+      margin-right: 12px;
+      border-radius: 50%;
+    }
+
+    .rank-number.gold { background: linear-gradient(135deg, #ffd700, #ffaa00); color: white; }
+    .rank-number.silver { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: white; }
+    .rank-number.bronze { background: linear-gradient(135deg, #cd7f32, #b87333); color: white; }
+    .rank-number.normal { background: #f0f0f0; color: #666; }
+
+    .rank-name {
+      flex: 1;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .rank-score {
+      font-weight: bold;
+      color: #c8102e;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    .loading::after {
+      content: '';
+      animation: dots 1.5s infinite;
+    }
+
+    @keyframes dots {
+      0%, 20% { content: '.'; }
+      40% { content: '..'; }
+      60%, 100% { content: '...'; }
+    }
+
+    @media screen and (max-width: 768px) {
+      .achievement-grid {
+        grid-template-columns: 1fr;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 id="pageTitle">🏆 成就系统</h1>
+    </div>
+
+    <div class="stats-overview" id="statsOverview">
+      <div class="loading" id="loadingText">正在加载数据</div>
+    </div>
+
+    <div class="achievement-section gpa-leaderboard" id="gpaLeaderboard" style="display: none;">
+      <div class="section-title" id="gpaLeaderboardTitle">📊 GPA排行榜</div>
+      <div id="gpaLeaderboardContent">
+        <div class="loading" id="loadingLeaderboard">正在加载排行榜...</div>
+      </div>
+    </div>
+
+    <div class="achievement-section">
+      <div class="section-title" id="puzzleAchievementsTitle">🗺️ 拼图模式成就</div>
+      <div class="achievement-grid" id="puzzleAchievements">
+      </div>
+    </div>
+
+    <div class="achievement-section">
+      <div class="section-title" id="quizAchievementsTitle">❓ 挑战模式成就</div>
+      <div class="achievement-grid" id="quizAchievements">
+      </div>
+    </div>
+
+    <div class="achievement-section">
+      <div class="section-title" id="learnAchievementsTitle">📚 学习模式成就</div>
+      <div class="achievement-grid" id="learnAchievements">
+      </div>
+    </div>
+
+    <div class="achievement-section">
+      <div class="section-title" id="streakAchievementsTitle">🎯 连续答题成就</div>
+      <div class="achievement-grid" id="streakAchievements">
+      </div>
+    </div>
+
+    <button class="back-btn" id="backBtn" onclick="location.href='mode.html'">返回主页</button>
+  </div>
+
+  <script>
+    const translations = {
+      'zh-CN': {
+        'title': '🏆 成就系统',
+        'loading': '正在加载数据',
+        'gpa-leaderboard': '📊 GPA排行榜',
+        'loading-leaderboard': '正在加载排行榜...',
+        'puzzle-achievements': '🗺️ 拼图模式成就',
+        'quiz-achievements': '❓ 挑战模式成就',
+        'learn-achievements': '📚 学习模式成就',
+        'streak-achievements': '🎯 连续答题成就',
+        'back-home': '返回主页',
+        'province-puzzle-correct': '省份拼图正确',
+        'city-puzzle-correct': '城市拼图正确',
+        'quiz-correct': '挑战模式正确',
+        'quiz-gpa': '挑战模式GPA',
+        'province-puzzle-streak': '省份拼图连续正确',
+        'city-puzzle-streak': '城市拼图连续正确',
+        'quiz-streak': '挑战模式连续正确',
+        'quiz-accuracy': '挑战模式正确率',
+        'rank': '排名',
+        'username': '用户名',
+        'accuracy': '正确率',
+        'no-data': '暂无排行数据',
+        'load-failed': '加载失败，请刷新页面重试',
+        'your-rank': '您的排名',
+        'your-gpa': '您的GPA'
+      },
+      'en': {
+        'title': '🏆 Achievement System',
+        'loading': 'Loading data',
+        'gpa-leaderboard': '📊 GPA Leaderboard',
+        'loading-leaderboard': 'Loading leaderboard...',
+        'puzzle-achievements': '🗺️ Puzzle Mode Achievements',
+        'quiz-achievements': '❓ Challenge Mode Achievements',
+        'learn-achievements': '📚 Learning Mode Achievements',
+        'streak-achievements': '🎯 Streak Achievements',
+        'back-home': 'Back to Home',
+        'province-puzzle-correct': 'Province Puzzle Correct',
+        'city-puzzle-correct': 'City Puzzle Correct',
+        'quiz-correct': 'Challenge Mode Correct',
+        'quiz-gpa': 'Challenge Mode GPA',
+        'province-puzzle-streak': 'Province Puzzle Streak',
+        'city-puzzle-streak': 'City Puzzle Streak',
+        'quiz-streak': 'Challenge Mode Streak',
+        'quiz-accuracy': 'Challenge Mode Accuracy',
+        'rank': 'Rank',
+        'username': 'Username',
+        'accuracy': 'Accuracy',
+        'no-data': 'No ranking data',
+        'load-failed': 'Load failed, please refresh and try again',
+        'your-rank': 'Your Rank',
+        'your-gpa': 'Your GPA'
+      }
+    };
+
+    const ACHIEVEMENTS_CONFIG = {
+      'zh-CN': {
+        puzzle: [
+          { id: 'puzzle_beginner', icon: '🌱', title: '初级地理学家', desc: '省份拼图答对10题', target: 10, type: 'puzzleProvince' },
+          { id: 'puzzle_intermediate', icon: '🌿', title: '中级地理学家', desc: '省份拼图答对20题', target: 20, type: 'puzzleProvince' },
+          { id: 'puzzle_expert', icon: '🌳', title: '高级地理学家', desc: '省份拼图答对30题', target: 30, type: 'puzzleProvince' },
+          { id: 'puzzle_master', icon: '🏔️', title: '地理学大师', desc: '省份拼图全部答对', target: 34, type: 'puzzleProvince' },
+          { id: 'city_beginner', icon: '🏘️', title: '城市探索者', desc: '城市拼图答对10题', target: 10, type: 'puzzleCity' },
+          { id: 'city_intermediate', icon: '🏙️', title: '城市研究者', desc: '城市拼图答对20题', target: 20, type: 'puzzleCity' },
+          { id: 'city_expert', icon: '🌃', title: '城市大师', desc: '城市拼图答对30题', target: 30, type: 'puzzleCity' },
+          { id: 'speed_demon', icon: '⚡', title: '速度达人', desc: '3分钟内完成拼图', target: 1, type: 'speed', special: true },
+          { id: 'perfect_speed', icon: '🚀', title: '极速挑战', desc: '2分钟内完成拼图', target: 1, type: 'perfectSpeed', special: true }
+        ],
+        quiz: [
+          { id: 'quiz_streak_5', icon: '🌟', title: '五星连珠', desc: '连续答对5题', target: 5, type: 'streak' },
+          { id: 'quiz_streak_10', icon: '⭐', title: '十连无双', desc: '连续答对10题', target: 10, type: 'streak' },
+          { id: 'quiz_streak_20', icon: '💫', title: '二十而励', desc: '连续答对20题', target: 20, type: 'streak' },
+          { id: 'quiz_streak_50', icon: '✨', title: '五十称雄', desc: '连续答对50题', target: 50, type: 'streak' },
+          { id: 'quiz_total_50', icon: '📖', title: '学而不厌', desc: '挑战模式答对50题', target: 50, type: 'quizCorrect' },
+          { id: 'quiz_total_100', icon: '📚', title: '学富五车', desc: '挑战模式答对100题', target: 100, type: 'quizCorrect' }
+        ],
+        learn: [
+          { id: 'learn_province_10', icon: '🗺️', title: '初识中华', desc: '学习10个省份', target: 10, type: 'learnedProvinces' },
+          { id: 'learn_province_20', icon: '🌐', title: '略知一二', desc: '学习20个省份', target: 20, type: 'learnedProvinces' },
+          { id: 'learn_province_all', icon: '🌏', title: '博学多才', desc: '学习全部省份', target: 34, type: 'learnedProvinces' }
+        ]
+      },
+      'en': {
+        puzzle: [
+          { id: 'puzzle_beginner', icon: '🌱', title: 'Beginner Geographer', desc: 'Answer 10 province puzzle questions correctly', target: 10, type: 'puzzleProvince' },
+          { id: 'puzzle_intermediate', icon: '🌿', title: 'Intermediate Geographer', desc: 'Answer 20 province puzzle questions correctly', target: 20, type: 'puzzleProvince' },
+          { id: 'puzzle_expert', icon: '🌳', title: 'Expert Geographer', desc: 'Answer 30 province puzzle questions correctly', target: 30, type: 'puzzleProvince' },
+          { id: 'puzzle_master', icon: '🏔️', title: 'Master Geographer', desc: 'Answer all province puzzle questions correctly', target: 34, type: 'puzzleProvince' },
+          { id: 'city_beginner', icon: '🏘️', title: 'City Explorer', desc: 'Answer 10 city puzzle questions correctly', target: 10, type: 'puzzleCity' },
+          { id: 'city_intermediate', icon: '🏙️', title: 'City Researcher', desc: 'Answer 20 city puzzle questions correctly', target: 20, type: 'puzzleCity' },
+          { id: 'city_expert', icon: '🌃', title: 'City Master', desc: 'Answer 30 city puzzle questions correctly', target: 30, type: 'puzzleCity' },
+          { id: 'speed_demon', icon: '⚡', title: 'Speed Demon', desc: 'Complete puzzle within 3 minutes', target: 1, type: 'speed', special: true },
+          { id: 'perfect_speed', icon: '🚀', title: 'Perfect Speed', desc: 'Complete puzzle within 2 minutes', target: 1, type: 'perfectSpeed', special: true }
+        ],
+        quiz: [
+          { id: 'quiz_streak_5', icon: '🌟', title: 'Five Star Streak', desc: 'Answer 5 consecutive questions correctly', target: 5, type: 'streak' },
+          { id: 'quiz_streak_10', icon: '⭐', title: 'Ten Star Streak', desc: 'Answer 10 consecutive questions correctly', target: 10, type: 'streak' },
+          { id: 'quiz_streak_20', icon: '💫', title: 'Twenty Star Streak', desc: 'Answer 20 consecutive questions correctly', target: 20, type: 'streak' },
+          { id: 'quiz_streak_50', icon: '✨', title: 'Fifty Star Streak', desc: 'Answer 50 consecutive questions correctly', target: 50, type: 'streak' },
+          { id: 'quiz_total_50', icon: '📖', title: 'Eager Learner', desc: 'Answer 50 challenge mode questions correctly', target: 50, type: 'quizCorrect' },
+          { id: 'quiz_total_100', icon: '📚', title: 'Knowledgeable', desc: 'Answer 100 challenge mode questions correctly', target: 100, type: 'quizCorrect' }
+        ],
+        learn: [
+          { id: 'learn_province_10', icon: '🗺️', title: 'China Explorer', desc: 'Learn about 10 provinces', target: 10, type: 'learnedProvinces' },
+          { id: 'learn_province_20', icon: '🌐', title: 'China Learner', desc: 'Learn about 20 provinces', target: 20, type: 'learnedProvinces' },
+          { id: 'learn_province_all', icon: '🌏', title: 'China Expert', desc: 'Learn about all provinces', target: 34, type: 'learnedProvinces' }
+        ]
+      }
+    };
+
+    function getLang() {
+      return localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+    }
+
+    function t(key) {
+      const lang = getLang();
+      return translations[lang] && translations[lang][key] ? translations[lang][key] : translations['zh-CN'][key] || key;
+    }
+
+    function getAchievementsConfig() {
+      const lang = getLang();
+      return ACHIEVEMENTS_CONFIG[lang] || ACHIEVEMENTS_CONFIG['zh-CN'];
+    }
+
+    let currentUser = null;
+    let userStats = null;
+
+    function getUserId() {
+      const isAdmin = sessionStorage.getItem('chinaMapAdmin') === 'true';
+      if (isAdmin) return 'admin';
+      const username = localStorage.getItem('chinaMapUsername');
+      if (username) {
+        return username;
+      }
+      return 'guest';
+    }
+
+    async function loadUserData() {
+      const userId = getUserId();
+      try {
+        const response = await fetch('/api/user-stats?userId=' + encodeURIComponent(userId));
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('加载用户数据失败:', error);
+        return { userId, achievements: {}, stats: {} };
+      }
+    }
+
+    async function saveUserData(userId, achievements, stats) {
+      try {
+        await fetch('/api/save-achievement', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, achievements, stats })
+        });
+      } catch (error) {
+        console.error('保存用户数据失败:', error);
+      }
+    }
+
+    function checkAchievement(id, config, stats) {
+      if (!stats) return 0;
+      switch (config.type) {
+        case 'puzzleProvince': return stats.puzzleProvinceCorrect || 0;
+        case 'puzzleCity': return stats.puzzleCityCorrect || 0;
+        case 'quizCorrect': return stats.quizCorrect || 0;
+        case 'streak': return stats.bestStreak || 0;
+        case 'learnedProvinces': return stats.learnedProvinces || 0;
+        default: return 0;
+      }
+    }
+
+    function isAchievementAchieved(id, achievements) {
+      return achievements && achievements[id];
+    }
+
+    function renderStats(stats) {
+      const puzzleProvinceCorrect = stats.puzzleProvinceCorrect || 0;
+      const puzzleCityCorrect = stats.puzzleCityCorrect || 0;
+      const quizCorrect = stats.quizCorrect || 0;
+      const quizTotal = stats.quizTotal || quizCorrect;
+      const quizAccuracy = quizTotal > 0
+        ? Math.round((quizCorrect / quizTotal) * 100)
+        : 0;
+      const quizGPA = quizTotal > 0
+        ? (quizAccuracy * 0.04).toFixed(3)
+        : '0.000';
+
+      return `
+        <div class="stats-grid">
+          <div class="stat-item main-stat">
+            <div class="stat-value">${puzzleProvinceCorrect}</div>
+            <div class="stat-label">${t('province-puzzle-correct')}</div>
+          </div>
+          <div class="stat-item main-stat">
+            <div class="stat-value">${puzzleCityCorrect}</div>
+            <div class="stat-label">${t('city-puzzle-correct')}</div>
+          </div>
+          <div class="stat-item main-stat">
+            <div class="stat-value">${quizCorrect}</div>
+            <div class="stat-label">${t('quiz-correct')}</div>
+          </div>
+          <div class="stat-item main-stat">
+            <div class="stat-value">${quizGPA}</div>
+            <div class="stat-label">${t('quiz-gpa')}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">${stats.puzzleProvinceStreak || 0}</div>
+            <div class="stat-label">${t('province-puzzle-streak')}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">${stats.puzzleCityStreak || 0}</div>
+            <div class="stat-label">${t('city-puzzle-streak')}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">${stats.quizStreak || 0}</div>
+            <div class="stat-label">${t('quiz-streak')}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">${quizAccuracy}%</div>
+            <div class="stat-label">${t('quiz-accuracy')}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAchievementCard(config, current, achievements) {
+      const achieved = isAchievementAchieved(config.id, achievements);
+      const progress = achieved ? config.target : Math.min(current, config.target);
+      const percent = Math.min((progress / config.target) * 100, 100);
+      
+      let cardClass = 'achievement-card';
+      if (achieved) cardClass += ' achieved';
+      
+      return `
+        <div class="${cardClass}" id="card-${config.id}">
+          <div class="achievement-icon">${config.icon}</div>
+          <div class="achievement-title">${config.title}</div>
+          <div class="achievement-desc">${config.desc}</div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${percent}%"></div>
+          </div>
+          <div class="progress-text">${progress} / ${config.target}</div>
+        </div>
+      `;
+    }
+
+    async function renderAchievements() {
+      const statsOverview = document.getElementById('statsOverview');
+      const puzzleContainer = document.getElementById('puzzleAchievements');
+      const quizContainer = document.getElementById('quizAchievements');
+      const learnContainer = document.getElementById('learnAchievements');
+      const streakContainer = document.getElementById('streakAchievements');
+
+      userStats = await loadUserData();
+      const stats = userStats.stats || {};
+      const achievements = userStats.achievements || {};
+
+      statsOverview.innerHTML = renderStats(stats);
+
+      const config = getAchievementsConfig();
+      
+      puzzleContainer.innerHTML = config.puzzle
+        .map(a => renderAchievementCard(a, checkAchievement(a.id, a, stats), achievements))
+        .join('');
+
+      quizContainer.innerHTML = config.quiz
+        .map(a => renderAchievementCard(a, checkAchievement(a.id, a, stats), achievements))
+        .join('');
+
+      learnContainer.innerHTML = config.learn
+        .map(a => renderAchievementCard(a, checkAchievement(a.id, a, stats), achievements))
+        .join('');
+
+      streakContainer.innerHTML = config.quiz
+        .filter(a => a.type === 'streak')
+        .map(a => `
+          <div class="achievement-card ${isAchievementAchieved(a.id, achievements) ? 'achieved' : ''}">
+            <div class="achievement-icon">${a.icon}</div>
+            <div class="achievement-title">${a.title}</div>
+            <div class="achievement-desc">${a.desc}</div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${Math.min((stats.bestStreak || 0) / a.target * 100, 100)}%"></div>
+            </div>
+            <div class="progress-text">${Math.min(stats.bestStreak || 0, a.target)} / ${a.target}</div>
+          </div>
+        `).join('');
+
+      await loadGPALeaderboard();
+    }
+
+    async function loadGPALeaderboard() {
+      const leaderboardSection = document.getElementById('gpaLeaderboard');
+      const contentDiv = document.getElementById('gpaLeaderboardContent');
+      const currentUserId = getUserId();
+
+      try {
+        const response = await fetch('/api/all-user-stats');
+        const allStats = await response.json();
+
+        if (!allStats || allStats.length === 0) {
+          leaderboardSection.style.display = 'block';
+          contentDiv.innerHTML = `<p style="text-align: center; color: #999; padding: 30px;">${t('no-data')}</p>`;
+          return;
+        }
+
+        leaderboardSection.style.display = 'block';
+
+        const top10 = allStats.slice(0, 10);
+        const currentUserRank = allStats.findIndex(s => s.userId === currentUserId);
+
+        let html = `
+          <div class="leaderboard-container">
+            <div class="leaderboard-header">
+              <span>${t('rank')}</span>
+              <span>${t('username')}</span>
+              <span>GPA</span>
+              <span class="accuracy-value">${t('accuracy')}</span>
+            </div>
+        `;
+
+        top10.forEach((item, index) => {
+          const rank = index + 1;
+          let rankClass = 'normal';
+          if (rank === 1) rankClass = 'gold';
+          else if (rank === 2) rankClass = 'silver';
+          else if (rank === 3) rankClass = 'bronze';
+
+          const isCurrentUser = item.userId === currentUserId;
+          const rowClass = isCurrentUser ? 'leaderboard-row current-user' : 'leaderboard-row';
+
+          html += `
+            <div class="${rowClass}">
+              <div class="rank-badge ${rankClass}">${rank}</div>
+              <div class="user-name">${item.userId}</div>
+              <div class="gpa-value">${item.gpa}</div>
+              <div class="accuracy-value">${item.accuracy}%</div>
+            </div>
+          `;
+        });
+
+        html += '</div>';
+
+        if (currentUserRank > 9 && currentUserId !== 'guest' && currentUserId !== 'admin') {
+          const userItem = allStats[currentUserRank];
+          const rankLabel = getLang() === 'en' ? `Rank ${currentUserRank + 1}` : `第${currentUserRank + 1}名`;
+          html += `
+            <div class="your-rank">
+              <div class="your-rank-info">
+                <span class="your-rank-label">${t('your-rank')}</span>
+                <span class="your-rank-value">${rankLabel}</span>
+              </div>
+              <div class="your-gpa">
+                <div class="your-gpa-label">${t('your-gpa')}</div>
+                <div class="your-gpa-value">${userItem.gpa}</div>
+              </div>
+            </div>
+          `;
+        }
+
+        contentDiv.innerHTML = html;
+      } catch (error) {
+        console.error('加载GPA排行榜失败:', error);
+        leaderboardSection.style.display = 'block';
+        contentDiv.innerHTML = `<p style="text-align: center; color: #ff4d4f; padding: 30px;">${t('load-failed')}</p>`;
+      }
+    }
+
+    function applyTranslations() {
+      document.getElementById('pageTitle').textContent = t('title');
+      document.getElementById('loadingText').textContent = t('loading');
+      document.getElementById('gpaLeaderboardTitle').textContent = t('gpa-leaderboard');
+      document.getElementById('loadingLeaderboard').textContent = t('loading-leaderboard');
+      document.getElementById('puzzleAchievementsTitle').textContent = t('puzzle-achievements');
+      document.getElementById('quizAchievementsTitle').textContent = t('quiz-achievements');
+      document.getElementById('learnAchievementsTitle').textContent = t('learn-achievements');
+      document.getElementById('streakAchievementsTitle').textContent = t('streak-achievements');
+      document.getElementById('backBtn').textContent = t('back-home');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      applyTranslations();
+      renderAchievements();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>交互式中国地图 - 初始页面</title>
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+
+    .language-selector {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 25px;
+      padding: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+      display: flex;
+      gap: 5px;
+    }
+
+    .language-option {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 20px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .language-option:hover {
+      background: rgba(200, 16, 46, 0.1);
+    }
+
+    .language-option.active {
+      background: #c8102e;
+      color: white;
+    }
+    
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .bg-pattern {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+      z-index: 0;
+    }
+    
+    .container {
+      max-width: 1200px;
+      width: 100%;
+      padding: 40px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .title-section {
+      margin-bottom: 60px;
+      animation: fadeInDown 1s ease-out;
+    }
+    
+    .main-title {
+      font-size: clamp(48px, 10vw, 72px);
+      font-weight: bold;
+      color: #c8102e;
+      text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+      font-family: "黄山毛峰书法体", serif;
+      letter-spacing: clamp(4px, 2vw, 16px);
+      margin-bottom: 20px;
+      animation: scaleIn 1.2s ease-out;
+    }
+    
+    .subtitle {
+      font-size: clamp(20px, 4vw, 32px);
+      color: #333;
+      margin-bottom: 30px;
+      animation: fadeInUp 1s ease-out 0.3s both;
+    }
+    
+    .english-title {
+      font-size: clamp(16px, 3vw, 24px);
+      color: #666;
+      font-family: "Arial", sans-serif;
+      letter-spacing: 2px;
+      animation: fadeInUp 1s ease-out 0.6s both;
+    }
+    
+    .image-section {
+      margin-bottom: 60px;
+      animation: fadeIn 1.5s ease-out 0.9s both;
+    }
+    
+    .china-image {
+      max-width: 80%;
+      max-height: 400px;
+      border-radius: 15px;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .china-image:hover {
+      transform: scale(1.05);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    
+    .button-section {
+      animation: fadeInUp 1s ease-out 1.2s both;
+    }
+    
+    .start-button {
+      padding: 20px 60px;
+      font-size: clamp(18px, 4vw, 24px);
+      font-weight: bold;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(90deg, #c8102e, #e6a23c);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .start-button:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    }
+    
+    .start-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.6s ease;
+    }
+    
+    .start-button:hover::before {
+      left: 100%;
+    }
+    
+    .footer {
+      margin-top: 60px;
+      font-size: 14px;
+      color: #666;
+      animation: fadeIn 1s ease-out 1.5s both;
+      text-align: center;
+    }
+
+    .footer a {
+      color: #666;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .footer a:hover {
+      color: #c8102e;
+    }
+
+    .footer-main {
+      margin-bottom: 10px;
+    }
+
+    .footer-copyright {
+      margin-bottom: 8px;
+    }
+
+    .footer-legal {
+      font-size: 13px;
+    }
+
+    .footer-legal a {
+      color: #1890ff;
+    }
+
+    .footer-legal a:hover {
+      text-decoration: underline;
+    }
+
+    .footer-divider {
+      margin: 0 8px;
+      color: #ccc;
+    }
+
+    .footer-icp {
+      font-size: 12px;
+      color: #999;
+      margin: 10px 0;
+    }
+
+    .footer-icp a {
+      color: #999;
+    }
+
+    .footer-disclaimer {
+      font-size: 11px;
+      color: #bbb;
+      font-style: italic;
+      margin-top: 8px;
+    }
+
+    .user-account-area {
+      position: fixed;
+      left: 20px;
+      bottom: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      z-index: 9999;
+      min-width: 180px;
+    }
+
+    .user-account-header {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .user-welcome {
+      font-weight: bold;
+      color: #333;
+      font-size: 14px;
+    }
+
+    .user-account-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .account-action {
+      color: #333;
+      font-size: 13px;
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 5px;
+      transition: background 0.2s;
+    }
+
+    .account-action:hover {
+      background: #f5f5f5;
+    }
+
+    .account-delete {
+      color: #ff4d4f;
+    }
+
+    .account-delete:hover {
+      background: #fff1f0;
+    }
+
+    .account-settings-content {
+      text-align: left;
+    }
+
+    .settings-section {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .settings-section:last-child {
+      border-bottom: none;
+    }
+
+    .settings-section h3 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .settings-section p {
+      color: #666;
+      margin: 5px 0;
+      font-size: 13px;
+    }
+
+    .settings-section input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .danger-zone {
+      background: #fff1f0;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #ffcdd9;
+    }
+
+    .danger-zone h3 {
+      color: #ff4d4f;
+    }
+
+    .modal-btn.danger {
+      background: #ff4d4f;
+      color: white;
+    }
+
+    .modal-btn.danger:hover {
+      background: #ff7875;
+    }
+
+    .icp-filing {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #999;
+    }
+
+    .icp-filing a {
+      color: #999;
+      text-decoration: none;
+    }
+
+    .icp-filing a:hover {
+      color: #c8102e;
+    }
+
+    .admin-link {
+      position: fixed;
+      bottom: 15px;
+      right: 20px;
+      font-size: 14px;
+      color: #bbb;
+      cursor: pointer;
+      z-index: 10;
+      transition: color 0.3s ease;
+      text-decoration: none;
+      user-select: none;
+    }
+    
+    .admin-link:hover {
+      color: #999;
+    }
+    
+    .admin-status-container {
+      position: fixed;
+      bottom: 15px;
+      right: 20px;
+      z-index: 10;
+      display: none;
+    }
+
+    .admin-status {
+      font-size: 14px;
+      color: #52c41a;
+      display: block;
+      text-align: right;
+    }
+
+    .admin-logout {
+      font-size: 14px;
+      color: #1890ff;
+      cursor: pointer;
+      display: block;
+      text-align: right;
+      margin-top: 2px;
+      transition: color 0.3s ease;
+    }
+
+    .admin-logout:hover {
+      color: #40a9ff;
+      text-decoration: underline;
+    }
+
+    .admin-users-btn {
+      font-size: 14px;
+      color: #1890ff;
+      cursor: pointer;
+      display: block;
+      text-align: right;
+      margin-top: 2px;
+      transition: color 0.3s ease;
+    }
+
+    .admin-users-btn:hover {
+      color: #40a9ff;
+      text-decoration: underline;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10001;
+    }
+    
+    .modal-overlay.active {
+      display: flex;
+    }
+    
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      width: 380px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+
+    .modal-tabs {
+      display: flex;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .modal-tab {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      color: #999;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .modal-tab.active {
+      color: #c8102e;
+      font-weight: bold;
+    }
+
+    .modal-tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #c8102e;
+    }
+    
+    .modal h3 {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .modal-tab-content {
+      display: none;
+    }
+
+    .modal-tab-content.active {
+      display: block;
+    }
+
+    .legal-modal {
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      text-align: left;
+      padding: 25px;
+    }
+
+    .legal-modal h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .legal-modal h3 {
+      color: #1890ff;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .legal-modal p {
+      color: #666;
+      line-height: 1.8;
+      margin-bottom: 10px;
+    }
+
+    .legal-modal ul {
+      color: #666;
+      line-height: 1.8;
+      margin-left: 20px;
+      margin-bottom: 10px;
+    }
+
+    .legal-modal ul li {
+      margin-bottom: 5px;
+    }
+
+    .legal-modal strong {
+      color: #ff4d4f;
+    }
+
+    .legal-modal a {
+      color: #1890ff;
+      text-decoration: none;
+    }
+
+    .legal-modal a:hover {
+      text-decoration: underline;
+    }
+
+    .legal-modal .modal-btn {
+      margin-top: 20px;
+    }
+
+    .legal-disclaimer {
+      margin-top: 15px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      font-size: 11px;
+      color: #666;
+      text-align: left;
+      line-height: 1.6;
+    }
+
+    .legal-disclaimer a {
+      color: #1890ff;
+    }
+
+    .cookies-notice {
+      margin-top: 8px;
+      font-size: 10px;
+      color: #999;
+    }
+    
+    .modal input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.3s;
+      margin-bottom: 12px;
+    }
+    
+    .modal input:focus {
+      border-color: #c8102e;
+    }
+
+    .modal input.error {
+      border-color: #ff4d4f;
+    }
+
+    .modal input[type="password"]::-webkit-credentials-auto-fill-button {
+      display: none !important;
+    }
+
+    .modal input[type="password"]::-webkit-caps-lock-indicator {
+      filter: none !important;
+    }
+
+    .modal input[type="password"]::-ms-reveal {
+      display: none !important;
+    }
+
+    .modal-error {
+      color: #ff4d4f;
+      font-size: 13px;
+      margin-bottom: 10px;
+      display: none;
+      text-align: left;
+    }
+
+    .modal-success {
+      color: #52c41a;
+      font-size: 13px;
+      margin-bottom: 10px;
+      display: none;
+      text-align: left;
+    }
+
+    .modal-note {
+      font-size: 12px;
+      color: #999;
+      margin-top: 10px;
+      text-align: left;
+    }
+
+    .password-security-warning {
+      font-size: 11px;
+      color: #ff9800;
+      background: #fff3e0;
+      padding: 8px 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      text-align: left;
+      border-left: 3px solid #ff9800;
+    }
+
+    .forgot-password {
+      font-size: 12px;
+      color: #1890ff;
+      cursor: pointer;
+      text-align: right;
+      margin-top: -8px;
+      margin-bottom: 12px;
+    }
+
+    .forgot-password:hover {
+      color: #40a9ff;
+    }
+
+    .modal-btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 5px;
+    }
+    
+    .modal-btn.confirm {
+      background: linear-gradient(90deg, #c8102e, #e6a23c);
+      color: #fff;
+    }
+    
+    .modal-btn.confirm:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+    }
+
+    .modal-btn.secondary {
+      background: #f0f0f0;
+      color: #666;
+      margin-top: 10px;
+    }
+
+    .modal-btn.secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .back-to-login {
+      font-size: 12px;
+      color: #1890ff;
+      cursor: pointer;
+      margin-top: 15px;
+    }
+
+    .back-to-login:hover {
+      color: #40a9ff;
+    }
+
+    .users-modal {
+      width: 550px;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .users-list {
+      margin-top: 20px;
+      text-align: left;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .user-item {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .user-item:last-child {
+      border-bottom: none;
+    }
+
+    .user-info {
+      flex: 1;
+    }
+
+    .user-name {
+      font-weight: bold;
+      color: #333;
+      display: block;
+    }
+
+    .user-time {
+      font-size: 12px;
+      color: #999;
+      display: block;
+      margin-top: 4px;
+    }
+
+    .user-status {
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: #e6f7ff;
+      color: #1890ff;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @media screen and (max-width: 768px) {
+      .container { padding: 20px; }
+      .main-title { font-size: 36px; }
+      .china-image { max-width: 90%; }
+      .start-button { padding: 15px 40px; font-size: 18px; }
+      .modal, .users-modal { width: 90%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+  
+  <div class="language-selector" id="languageSelector">
+    <button class="language-option" data-lang="zh-CN" onclick="setLanguage('zh-CN')">简体中文</button>
+    <button class="language-option" data-lang="en" onclick="setLanguage('en')">English</button>
+  </div>
+  
+  <div class="container">
+    <div class="title-section">
+      <h1 class="main-title">交互式中国地图</h1>
+      <p class="subtitle">探索祖国的大好河山</p>
+    </div>
+    
+    <div class="image-section">
+      <img src="images/china.jpg" alt="中国地图" class="china-image">
+    </div>
+    
+    <div class="button-section">
+      <button class="start-button" onclick="startJourney()">开启中国之旅</button>
+    </div>
+    
+    <div class="footer">
+      <div class="footer-main">
+        <p class="footer-copyright">&copy; 2026 交互式中国地图 | 探索地理知识，感受祖国魅力</p>
+        <div class="footer-legal">
+          <a href="#" onclick="showTermsModal(); return false;">服务条款</a>
+          <span class="footer-divider">|</span>
+          <a href="#" onclick="showPrivacyModal(); return false;">隐私政策</a>
+          <span class="footer-divider">|</span>
+          <a href="#" onclick="showCookiesModal(); return false;">Cookie政策</a>
+        </div>
+      </div>
+      <div class="footer-icp">
+        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
+          京 ICP 备 30177588458417371 号-1
+        </a>
+      </div>
+      <p class="footer-disclaimer">本平台仅为教育课业展示项目，地图数据可能存在误差，请以官方信息为准。用户的账户安全责任由用户自行承担。</p>
+    </div>
+  </div>
+
+  <div class="user-account-area" id="userAccountArea" style="display: none;">
+    <div class="user-account-header">
+      <span class="user-welcome" id="userWelcome">您好，用户</span>
+    </div>
+    <div class="user-account-actions">
+      <a href="#" onclick="openAccountSettings(); return false;" class="account-action">⚙️ 账户设置</a>
+      <a href="#" onclick="doLogout(); return false;" class="account-action">🚪 退出登录</a>
+    </div>
+  </div>
+
+  <span class="admin-link" id="adminLink" onclick="openAdminModal()">管理员入口</span>
+  <div class="admin-status-container">
+    <span class="admin-status" id="adminStatus">✅ 管理员已登录</span>
+    <span class="admin-users-btn" id="adminUsersBtn" onclick="openUsersModal()">已注册用户</span>
+    <span class="admin-logout" id="adminLogout" onclick="adminLogout()">退出管理员模式</span>
+  </div>
+
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal">
+      <div class="modal-tabs">
+        <button class="modal-tab active" data-tab="login" onclick="switchTab('login')">登录</button>
+        <button class="modal-tab" data-tab="register" onclick="switchTab('register')">注册</button>
+      </div>
+
+      <div class="modal-error" id="loginError"></div>
+      <div class="modal-success" id="loginSuccess"></div>
+
+      <div class="modal-tab-content active" id="loginTab">
+        <input type="text" id="loginUsername" placeholder="请输入用户名" autocomplete="off">
+        <input type="password" id="loginPassword" placeholder="请输入密码" autocomplete="off">
+        <div class="password-security-warning" id="loginPasswordWarning">⚠️ 安全提示：仅为课业展示，未做数据安全保护，请勿使用常用密码</div>
+        <div class="forgot-password" onclick="showForgotPassword()">忘记密码？</div>
+        <button class="modal-btn confirm" onclick="doLogin()">登录</button>
+      </div>
+
+      <div class="modal-tab-content" id="registerTab">
+        <input type="text" id="registerUsername" placeholder="请输入用户名（最好让作者知道您是谁）" autocomplete="off">
+        <input type="password" id="registerPassword" placeholder="请输入密码" autocomplete="off">
+          <input type="password" id="registerConfirmPassword" placeholder="请确认密码" autocomplete="off">
+        <button class="modal-btn confirm" onclick="doRegister()">注册</button>
+      </div>
+
+      <div class="modal-tab-content" id="forgotTab">
+        <p style="color: #666; font-size: 14px; margin-bottom: 15px;">请输入用户名和新密码</p>
+        <input type="text" id="forgotUsername" placeholder="请输入用户名" autocomplete="off">
+        <input type="password" id="forgotNewPassword" placeholder="请输入新密码" autocomplete="off">
+        <button class="modal-btn confirm" onclick="doResetPassword()">重置密码</button>
+        <div class="back-to-login" onclick="switchTab('login')">返回登录</div>
+      </div>
+
+      <button class="modal-btn secondary" onclick="closeLoginModal()">取消</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="adminModal">
+    <div class="modal">
+      <h3 id="adminModalTitle">🔐 管理员登录</h3>
+      <div class="modal-error" id="adminError">密码错误</div>
+      <input type="password" id="adminPassword" placeholder="请输入管理员密码" autocomplete="off">
+      <button class="modal-btn confirm" onclick="adminLogin()">登录</button>
+      <button class="modal-btn secondary" onclick="closeAdminModal()">取消</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="usersModal">
+    <div class="modal users-modal">
+      <h3 id="usersModalTitle">👥 已注册用户</h3>
+      <div class="users-list" id="usersList">
+      </div>
+      <button class="modal-btn confirm" onclick="closeUsersModal()">关闭</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="accountSettingsModal">
+    <div class="modal legal-modal">
+      <h2>⚙️ 账户设置</h2>
+      <div class="account-settings-content">
+        <div class="settings-section">
+          <h3>👤 账户信息</h3>
+          <p>用户名：<span id="settingsUsername"></span></p>
+          <p>注册时间：<span id="settingsCreateTime"></span></p>
+        </div>
+        <div class="settings-section">
+          <h3>🔒 修改密码</h3>
+          <input type="password" id="currentPassword" placeholder="请输入当前密码" autocomplete="off">
+          <input type="password" id="newPassword" placeholder="请输入新密码" autocomplete="off">
+          <input type="password" id="confirmNewPassword" placeholder="请确认新密码" autocomplete="off">
+          <button class="modal-btn confirm" onclick="changePassword()">修改密码</button>
+        </div>
+        <div class="settings-section danger-zone">
+          <h3>⚠️ 危险区域</h3>
+          <p>注销账户后，您的所有个人数据和学习记录将被永久删除，此操作不可撤销。</p>
+          <button class="modal-btn danger" onclick="deleteAccount()">确认注销账户</button>
+        </div>
+      </div>
+      <button class="modal-btn secondary" onclick="closeAccountSettingsModal()">关闭</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="termsModal">
+    <div class="modal legal-modal">
+      <h2>📜 服务条款</h2>
+      <p><strong>最后更新日期：2026年5月16日</strong></p>
+      <h3>1. 服务说明</h3>
+      <p>交互式中国地图（以下简称"本平台"）是一个教育性质的地理学习平台，旨在帮助用户了解中国地理知识。用户确认并同意，本平台仅为课业展示项目，不提供任何商业服务。</p>
+      <h3>2. 用户账户</h3>
+      <ul>
+        <li>用户需保证注册信息的真实性、准确性和完整性</li>
+        <li>用户应妥善保管账户密码，因个人保管不当造成的损失由用户自行承担</li>
+        <li>用户可随时注销账户，注销后相关数据将被删除</li>
+      </ul>
+      <h3>3. 知识产权</h3>
+      <p>本平台的所有内容，包括但不限于文字、图片、地图数据等，其知识产权归本平台所有。用户在使用本平台时获得的内容仅限个人学习目的使用，不得进行商业利用或二次传播。</p>
+      <h3>4. 免责声明</h3>
+      <ul>
+        <li>本平台仅为教育目的创建，地图数据可能存在一定误差</li>
+        <li>用户因使用本平台而产生的任何直接或间接损失，本平台不承担任何责任</li>
+        <li>本平台保留随时修改或中断服务的权利，恕不另行通知</li>
+      </ul>
+      <h3>5. Cookies 使用</h3>
+      <p>本平台使用 Cookies 来改善用户体验，包括但不限于保持登录状态、记住用户偏好等。您可通过浏览器设置禁用 Cookies，但可能导致部分功能无法正常使用。</p>
+      <h3>6. 隐私保护</h3>
+      <p>我们重视用户的隐私保护，具体请参阅《隐私政策》。</p>
+      <h3>7. 服务变更</h3>
+      <p>本平台保留随时修改这些条款的权利。修改后的条款一经公布即生效。如您继续使用本平台，则视为您接受修改后的条款。</p>
+      <h3>8. 联系我们</h3>
+      <p>如您对本服务条款有任何疑问，请通过平台内的反馈功能与我们联系。</p>
+      <button class="modal-btn confirm" onclick="closeTermsModal()">我已阅读并同意</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="privacyModal">
+    <div class="modal legal-modal">
+      <h2>🔒 隐私政策</h2>
+      <p><strong>最后更新日期：2026年5月16日</strong></p>
+      <h3>1. 信息收集</h3>
+      <p>我们收集您主动提供的信息，包括：</p>
+      <ul>
+        <li>注册信息：用户名（昵称）</li>
+        <li>学习记录：答题成绩、学习进度等</li>
+        <li>反馈信息：您主动提交的问题或建议</li>
+      </ul>
+      <h3>2. 信息使用</h3>
+      <p>我们收集的信息仅用于：</p>
+      <ul>
+        <li>提供和改进我们的服务</li>
+        <li>记录您的学习进度和成绩</li>
+        <li>回应您的反馈和建议</li>
+        <li>进行匿名化的统计分析</li>
+      </ul>
+      <h3>3. 信息保护</h3>
+      <p><strong>重要提示：</strong>由于本平台仅为课业展示项目，未进行完整的数据安全保护措施，请勿使用您的常用密码或敏感密码注册。</p>
+      <h3>4. Cookies 政策</h3>
+      <p>本平台使用 Cookies：</p>
+      <ul>
+        <li><strong>必要的 Cookies：</strong>用于维持登录状态和基本功能</li>
+        <li><strong>功能性 Cookies：</strong>记住您的偏好设置</li>
+        <li><strong>分析性 Cookies：</strong>帮助我们了解用户如何使用我们的服务</li>
+      </ul>
+      <h3>5. 数据保留</h3>
+      <p>您的账户数据和相关信息将在您注销账户后保留30天，之后将被永久删除。</p>
+      <h3>6. 您的权利</h3>
+      <p>您有权了解、更正或删除您的个人信息。</p>
+      <h3>7. 联系我们</h3>
+      <p>如您对本隐私政策有任何疑问，请通过平台内的反馈功能与我们联系。</p>
+      <button class="modal-btn confirm" onclick="closePrivacyModal()">我已阅读并同意</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="cookiesModal">
+    <div class="modal legal-modal">
+      <h2>🍪 Cookie 政策</h2>
+      <p><strong>最后更新日期：2026年5月16日</strong></p>
+      <h3>1. 什么是 Cookies</h3>
+      <p>Cookie 是您访问网站时浏览器存储在您设备上的小型文本文件。它们被广泛用于确保网站正常运作、提升用户体验，以及为网站所有者提供有用的信息。</p>
+      <h3>2. 我们使用的 Cookies 类型</h3>
+      <ul>
+        <li><strong>必要的 Cookies：</strong>这些 Cookies 对于网站的正常运行至关重要，无法关闭。它们包括用户认证、负载均衡等基本功能。</li>
+        <li><strong>功能性 Cookies：</strong>这些 Cookies 记住您的偏好设置（如语言选择、登录状态等），为您提供更个性化的体验。</li>
+        <li><strong>分析性 Cookies：</strong>这些 Cookies 帮助我们了解用户如何与我们的网站互动，以便我们持续改进。</li>
+      </ul>
+      <h3>3. 如何管理 Cookies</h3>
+      <p>您可以通过浏览器设置来管理或删除 Cookies。请注意，禁用某些 Cookies 可能会影响网站的部分功能。</p>
+      <ul>
+        <li>Chrome：设置 → 隐私和安全 → Cookies</li>
+        <li>Firefox：选项 → 隐私与安全 → Cookies</li>
+        <li>Safari：偏好设置 → 隐私 → Cookies</li>
+        <li>Edge：设置 → Cookie 和网站权限</li>
+      </ul>
+      <h3>4. 第三方 Cookies</h3>
+      <p>我们的网站可能包含第三方服务提供的 Cookies（如 Google Analytics）。这些 Cookies 由相应的第三方设置，用于其自身的目的。</p>
+      <h3>5. 更多了解</h3>
+      <p>如需了解更多关于 Cookies 的信息，请访问 <a href="https://www.aboutcookies.org/" target="_blank">www.aboutcookies.org</a> 或 <a href="https://www.allaboutcookies.org/" target="_blank">www.allaboutcookies.org</a>。</p>
+      <button class="modal-btn confirm" onclick="closeCookiesModal()">我已知悉</button>
+    </div>
+  </div>
+  
+  <script>
+    const translations = {
+      'zh-CN': {
+        'main-title': '交互式中国地图',
+        'subtitle': '探索祖国的大好河山',
+        'start-button': '开启中国之旅',
+        'footer': '© 2026 交互式中国地图 | 探索地理知识，感受祖国魅力',
+        'admin-link': '管理员入口',
+        'admin-status': '✅ 管理员已登录',
+        'admin-modal-title': '🔐 管理员登录',
+        'admin-password-placeholder': '请输入管理员密码',
+        'admin-error': '密码错误',
+        'developer-tools-disabled': '开发者工具已禁用',
+        'right-click-disabled': '右键菜单已禁用',
+        'users-modal-title': '👥 已注册用户',
+        'admin-users-btn': '已注册用户',
+        'login-tab': '登录',
+        'register-tab': '注册',
+        'login-username-placeholder': '请输入用户名',
+        'login-password-placeholder': '请输入密码',
+        'register-username-placeholder': '请输入用户名（昵称）',
+        'register-password-placeholder': '请输入密码',
+        'register-confirm-placeholder': '请确认密码',
+        'forgot-password': '忘记密码？',
+        'forgot-username-placeholder': '请输入用户名',
+        'forgot-new-password-placeholder': '请输入新密码',
+        'back-to-login': '返回登录',
+        'cancel-button': '取消',
+        'user-create-time': '注册时间',
+        'user-last-login': '最后登录',
+        'user-never-login': '从未登录',
+        'password-security-warning': '⚠️ 安全提示：仅为课业展示，未做数据安全保护，请勿使用常用密码'
+      },
+      'en': {
+        'main-title': 'Interactive China Map',
+        'subtitle': 'Explore the Beautiful Land of China',
+        'start-button': 'Start China Journey',
+        'footer': '© 2026 Interactive China Map | Explore Geographical Knowledge',
+        'admin-link': 'Admin Entry',
+        'admin-status': '✅ Admin Logged In',
+        'admin-modal-title': '🔐 Admin Login',
+        'admin-password-placeholder': 'Please enter admin password',
+        'admin-error': 'Password error',
+        'developer-tools-disabled': 'Developer tools disabled',
+        'right-click-disabled': 'Right-click disabled',
+        'users-modal-title': '👥 Registered Users',
+        'admin-users-btn': 'Registered Users',
+        'login-tab': 'Login',
+        'register-tab': 'Register',
+        'login-username-placeholder': 'Please enter username',
+        'login-password-placeholder': 'Please enter password',
+        'register-username-placeholder': 'Please enter username (nickname)',
+        'register-password-placeholder': 'Please enter password',
+        'register-confirm-placeholder': 'Please confirm password',
+        'forgot-password': 'Forgot password?',
+        'forgot-username-placeholder': 'Please enter username',
+        'forgot-new-password-placeholder': 'Please enter new password',
+        'back-to-login': 'Back to login',
+        'cancel-button': 'Cancel',
+        'user-create-time': 'Registration time',
+        'user-last-login': 'Last login',
+        'user-never-login': 'Never logged in',
+        'password-security-warning': '⚠️ Security Notice: This is a course project only, no data security protection is implemented. Please do not use common passwords.'
+      }
+    };
+
+    function setLanguage(lang) {
+      localStorage.setItem('mapQuizLanguage', lang);
+      applyLanguage();
+    }
+
+    function applyLanguage() {
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+      const validLanguage = translations[language] ? language : 'zh-CN';
+      
+      document.querySelectorAll('.language-option').forEach(btn => {
+        if (btn.dataset.lang === validLanguage) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      
+      document.querySelector('.main-title').textContent = translations[validLanguage]['main-title'];
+      document.querySelector('.subtitle').textContent = translations[validLanguage]['subtitle'];
+      document.querySelector('.start-button').textContent = translations[validLanguage]['start-button'];
+      document.querySelector('.footer p').textContent = translations[validLanguage]['footer'];
+      document.querySelector('.admin-link').textContent = translations[validLanguage]['admin-link'];
+      document.querySelector('.admin-status').textContent = translations[validLanguage]['admin-status'];
+      document.querySelector('.admin-users-btn').textContent = translations[validLanguage]['admin-users-btn'];
+      
+      document.querySelector('#adminModalTitle').textContent = translations[validLanguage]['admin-modal-title'];
+      document.querySelector('#adminPassword').placeholder = translations[validLanguage]['admin-password-placeholder'];
+      document.querySelector('#adminError').textContent = translations[validLanguage]['admin-error'];
+      
+      document.querySelector('#usersModalTitle').textContent = translations[validLanguage]['users-modal-title'];
+
+      document.querySelector('#loginUsername').placeholder = translations[validLanguage]['login-username-placeholder'];
+      document.querySelector('#loginPassword').placeholder = translations[validLanguage]['login-password-placeholder'];
+      document.querySelector('#registerUsername').placeholder = translations[validLanguage]['register-username-placeholder'];
+      document.querySelector('#registerPassword').placeholder = translations[validLanguage]['register-password-placeholder'];
+      document.querySelector('#registerConfirmPassword').placeholder = translations[validLanguage]['register-confirm-placeholder'];
+      document.querySelector('.forgot-password').textContent = translations[validLanguage]['forgot-password'];
+      document.querySelector('#forgotUsername').placeholder = translations[validLanguage]['forgot-username-placeholder'];
+      document.querySelector('#forgotNewPassword').placeholder = translations[validLanguage]['forgot-new-password-placeholder'];
+      document.querySelector('.back-to-login').textContent = translations[validLanguage]['back-to-login'];
+      document.querySelector('#loginPasswordWarning').textContent = translations[validLanguage]['password-security-warning'];
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.modal-tab-content').forEach(c => c.classList.remove('active'));
+      
+      document.querySelector(`.modal-tab[data-tab="${tab}"]`).classList.add('active');
+      document.getElementById(tab + 'Tab').classList.add('active');
+      
+      document.getElementById('loginError').style.display = 'none';
+      document.getElementById('loginSuccess').style.display = 'none';
+
+      if (tab === 'login') {
+        document.getElementById('loginUsername').focus();
+      } else if (tab === 'register') {
+        document.getElementById('registerUsername').focus();
+      }
+    }
+
+    function showForgotPassword() {
+      switchTab('login');
+      setTimeout(() => {
+        document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.modal-tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById('forgotTab').classList.add('active');
+        document.getElementById('forgotUsername').focus();
+      }, 100);
+    }
+
+    function startJourney() {
+      const isAdmin = sessionStorage.getItem('chinaMapAdmin') === 'true';
+      if (isAdmin) {
+        window.location.href = 'mode.html';
+      } else {
+        openLoginModal();
+      }
+    }
+
+    window.addEventListener('load', function() {
+      document.body.style.opacity = '0';
+      document.body.style.transition = 'opacity 0.5s ease';
+      setTimeout(() => {
+        document.body.style.opacity = '1';
+      }, 100);
+      checkAdminStatus();
+      checkUserStatus();
+      applyLanguage();
+    });
+
+    function checkUserStatus() {
+      const isLoggedIn = localStorage.getItem('chinaMapLoggedIn') === 'true';
+      const username = localStorage.getItem('chinaMapUsername');
+      const userAccountArea = document.getElementById('userAccountArea');
+      
+      if (isLoggedIn && username) {
+        userAccountArea.style.display = 'block';
+        document.getElementById('userWelcome').textContent = '您好，' + username;
+      } else {
+        userAccountArea.style.display = 'none';
+      }
+    }
+
+    function checkAdminStatus() {
+      const isAdmin = sessionStorage.getItem('chinaMapAdmin') === 'true';
+      const link = document.getElementById('adminLink');
+      const statusContainer = document.querySelector('.admin-status-container');
+      if (isAdmin) {
+        link.style.display = 'none';
+        statusContainer.style.display = 'block';
+      } else {
+        link.style.display = 'inline';
+        statusContainer.style.display = 'none';
+      }
+    }
+
+    function adminLogout() {
+      sessionStorage.removeItem('chinaMapAdmin');
+      checkAdminStatus();
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+      alert(language === 'zh-CN' ? '已退出管理员模式' : 'Admin mode exited');
+    }
+
+    function openAdminModal() {
+      document.getElementById('adminModal').classList.add('active');
+      document.getElementById('adminPassword').value = '';
+      document.getElementById('adminError').style.display = 'none';
+      setTimeout(() => document.getElementById('adminPassword').focus(), 100);
+    }
+
+    function closeAdminModal() {
+      document.getElementById('adminModal').classList.remove('active');
+    }
+
+    // 计算字符串的MD5哈希值（与后端一致）
+    function md5Hash(str) {
+      let hash = 0;
+      for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return Math.abs(hash).toString(16);
+    }
+
+    async function adminLogin() {
+      const pwd = document.getElementById('adminPassword').value;
+      document.getElementById('adminError').style.display = 'none';
+      
+      if (!pwd) {
+        document.getElementById('adminError').style.display = 'block';
+        document.getElementById('adminPassword').focus();
+        return;
+      }
+      
+      try {
+        // 前端对密码进行哈希处理，不发送明文
+        const passwordHash = md5Hash(pwd);
+        const response = await fetch('/api/admin-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: passwordHash })
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+          sessionStorage.setItem('chinaMapAdmin', 'true');
+          closeAdminModal();
+          checkAdminStatus();
+          window.location.href = 'mode.html';
+        } else {
+          document.getElementById('adminError').style.display = 'block';
+          document.getElementById('adminPassword').value = '';
+          document.getElementById('adminPassword').focus();
+        }
+      } catch (error) {
+        console.error('管理员登录失败:', error);
+        const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+        alert(language === 'zh-CN' ? '登录失败，请检查网络连接' : 'Login failed, please check network connection');
+      }
+    }
+
+    function openLoginModal() {
+      document.getElementById('loginModal').classList.add('active');
+      switchTab('login');
+      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginPassword').value = '';
+      document.getElementById('registerUsername').value = '';
+      document.getElementById('registerPassword').value = '';
+      document.getElementById('registerConfirmPassword').value = '';
+      document.getElementById('forgotUsername').value = '';
+      document.getElementById('forgotNewPassword').value = '';
+      document.getElementById('loginError').style.display = 'none';
+      document.getElementById('loginSuccess').style.display = 'none';
+      setTimeout(() => document.getElementById('loginUsername').focus(), 100);
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.remove('active');
+    }
+
+    function doRegister() {
+      const username = document.getElementById('registerUsername').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      const confirmPassword = document.getElementById('registerConfirmPassword').value;
+      const errorEl = document.getElementById('loginError');
+      const successEl = document.getElementById('loginSuccess');
+
+      errorEl.style.display = 'none';
+      successEl.style.display = 'none';
+
+      if (!username) {
+        errorEl.textContent = '请输入用户名';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      if (username === '管理员' || username === 'admin') {
+        errorEl.textContent = '该名称不可用，请换一个名字';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      if (password.length < 4) {
+        errorEl.textContent = '密码至少4个字符';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        errorEl.textContent = '两次输入的密码不一致';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          successEl.textContent = '注册成功！请登录';
+          successEl.style.display = 'block';
+          document.getElementById('registerUsername').value = '';
+          document.getElementById('registerPassword').value = '';
+          document.getElementById('registerConfirmPassword').value = '';
+          if (data.createTime) {
+            localStorage.setItem('chinaMapCreateTime', data.createTime);
+          }
+          setTimeout(() => switchTab('login'), 1500);
+        } else {
+          errorEl.textContent = data.message || '注册失败';
+          errorEl.style.display = 'block';
+        }
+      })
+      .catch(err => {
+        errorEl.textContent = '网络错误，请稍后重试';
+        errorEl.style.display = 'block';
+      });
+    }
+
+    function doLogin() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorEl = document.getElementById('loginError');
+
+      errorEl.style.display = 'none';
+
+      if (!username) {
+        errorEl.textContent = '请输入用户名';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      if (!password) {
+        errorEl.textContent = '请输入密码';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      fetch('/api/user-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          localStorage.setItem('chinaMapLoggedIn', 'true');
+          localStorage.setItem('chinaMapUsername', username);
+          if (data.createTime) {
+            localStorage.setItem('chinaMapCreateTime', data.createTime);
+          }
+          closeLoginModal();
+          checkUserStatus();
+          window.location.href = 'mode.html';
+        } else {
+          errorEl.textContent = data.message || '用户名或密码错误';
+          errorEl.style.display = 'block';
+        }
+      })
+      .catch(err => {
+        errorEl.textContent = '网络错误，请稍后重试';
+        errorEl.style.display = 'block';
+      });
+    }
+
+    function doResetPassword() {
+      const username = document.getElementById('forgotUsername').value.trim();
+      const newPassword = document.getElementById('forgotNewPassword').value;
+      const errorEl = document.getElementById('loginError');
+      const successEl = document.getElementById('loginSuccess');
+
+      errorEl.style.display = 'none';
+      successEl.style.display = 'none';
+
+      if (!username) {
+        errorEl.textContent = '请输入用户名';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      if (newPassword.length < 4) {
+        errorEl.textContent = '密码至少4个字符';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      fetch('/api/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, newPassword })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          successEl.textContent = '密码重置成功！请登录';
+          successEl.style.display = 'block';
+          document.getElementById('forgotUsername').value = '';
+          document.getElementById('forgotNewPassword').value = '';
+          setTimeout(() => switchTab('login'), 1500);
+        } else {
+          errorEl.textContent = data.message || '用户不存在';
+          errorEl.style.display = 'block';
+        }
+      })
+      .catch(err => {
+        errorEl.textContent = '网络错误，请稍后重试';
+        errorEl.style.display = 'block';
+      });
+    }
+
+    function openUsersModal() {
+      document.getElementById('usersModal').classList.add('active');
+      loadUsers();
+    }
+
+    function closeUsersModal() {
+      document.getElementById('usersModal').classList.remove('active');
+    }
+
+    function openAccountSettings() {
+      const username = localStorage.getItem('chinaMapUsername');
+      const createTime = localStorage.getItem('chinaMapCreateTime');
+      document.getElementById('settingsUsername').textContent = username || '未知';
+      document.getElementById('settingsCreateTime').textContent = createTime ? new Date(createTime).toLocaleString('zh-CN') : '未知';
+      document.getElementById('accountSettingsModal').classList.add('active');
+    }
+
+    function closeAccountSettingsModal() {
+      document.getElementById('accountSettingsModal').classList.remove('active');
+    }
+
+    async function changePassword() {
+      const currentPassword = document.getElementById('currentPassword').value;
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmNewPassword').value;
+      const username = localStorage.getItem('chinaMapUsername');
+
+      if (!currentPassword || !newPassword || !confirmPassword) {
+        alert('请填写所有密码字段');
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        alert('新密码与确认密码不一致');
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        alert('新密码长度至少6位');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, currentPassword, newPassword })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          alert('密码修改成功');
+          document.getElementById('currentPassword').value = '';
+          document.getElementById('newPassword').value = '';
+          document.getElementById('confirmNewPassword').value = '';
+          closeAccountSettingsModal();
+        } else {
+          alert(result.message || '密码修改失败');
+        }
+      } catch (error) {
+        console.error('修改密码失败:', error);
+        alert('修改密码失败，请稍后再试');
+      }
+    }
+
+    function confirmDeleteAccount() {
+      if (confirm('确定要注销您的账户吗？\n\n⚠️ 此操作不可逆！\n\n您的所有个人数据和学习记录将被永久删除。')) {
+        if (confirm('最后一次确认：\n\n您确定要注销账户吗？\n\n点击"确定"将永久删除您的账户。')) {
+          deleteAccount();
+        }
+      }
+    }
+
+    async function deleteAccount() {
+      const username = localStorage.getItem('chinaMapUsername');
+      const password = prompt('请输入您的密码以确认注销：');
+
+      if (!password) {
+        alert('取消注销操作');
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/delete-account', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const result = await response.json();
+
+        if (result.success) {
+          alert('账户已注销，感谢您的使用！');
+          localStorage.removeItem('chinaMapUsername');
+          localStorage.removeItem('chinaMapLoggedIn');
+          localStorage.removeItem('chinaMapCreateTime');
+          location.reload();
+        } else {
+          alert(result.message || '账户注销失败');
+        }
+      } catch (error) {
+        console.error('注销账户失败:', error);
+        alert('注销失败，请稍后再试');
+      }
+    }
+
+    function doLogout() {
+      localStorage.removeItem('chinaMapUsername');
+      localStorage.removeItem('chinaMapLoggedIn');
+      localStorage.removeItem('chinaMapCreateTime');
+      location.reload();
+    }
+
+    function showTermsModal() {
+      document.getElementById('termsModal').classList.add('active');
+    }
+
+    function closeTermsModal() {
+      document.getElementById('termsModal').classList.remove('active');
+    }
+
+    function showPrivacyModal() {
+      document.getElementById('privacyModal').classList.add('active');
+    }
+
+    function closePrivacyModal() {
+      document.getElementById('privacyModal').classList.remove('active');
+    }
+
+    function showCookiesModal() {
+      document.getElementById('cookiesModal').classList.add('active');
+    }
+
+    function closeCookiesModal() {
+      document.getElementById('cookiesModal').classList.remove('active');
+    }
+
+    function loadUsers() {
+      const usersList = document.getElementById('usersList');
+      usersList.innerHTML = '<p style="text-align: center; color: #666;">加载中...</p>';
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+
+      fetch('/api/all-users')
+        .then(response => response.json())
+        .then(users => {
+          if (users && users.length > 0) {
+            usersList.innerHTML = '';
+            users.forEach(user => {
+              const userItem = document.createElement('div');
+              userItem.className = 'user-item';
+              const createTime = user.createTime ? new Date(user.createTime).toLocaleString() : '-';
+              const lastLogin = user.lastLoginTime ? new Date(user.lastLoginTime).toLocaleString() : translations[language]['user-never-login'];
+              
+              userItem.innerHTML = `
+                <div class="user-info">
+                  <span class="user-name">${user.username}</span>
+                  <span class="user-time">${translations[language]['user-create-time']}: ${createTime}</span>
+                  <span class="user-time">${translations[language]['user-last-login']}: ${lastLogin}</span>
+                </div>
+              `;
+              usersList.appendChild(userItem);
+            });
+          } else {
+            usersList.innerHTML = '<p style="text-align: center; color: #666;">暂无注册用户</p>';
+          }
+        })
+        .catch(error => {
+          console.error('加载用户列表失败:', error);
+          usersList.innerHTML = '<p style="text-align: center; color: #ff4d4f;">加载失败</p>';
+        });
+    }
+
+    document.getElementById('loginPassword').addEventListener('keyup', function(e) {
+      if (e.key === 'Enter') doLogin();
+    });
+
+    document.getElementById('adminPassword').addEventListener('keyup', function(e) {
+      if (e.key === 'Enter') adminLogin();
+    });
+
+    document.getElementById('loginModal').addEventListener('click', function(e) {
+      if (e.target === this) closeLoginModal();
+    });
+
+    document.getElementById('adminModal').addEventListener('click', function(e) {
+      if (e.target === this) closeAdminModal();
+    });
+
+    document.getElementById('usersModal').addEventListener('click', function(e) {
+      if (e.target === this) closeUsersModal();
+    });
+
+    document.getElementById('accountSettingsModal').addEventListener('click', function(e) {
+      if (e.target === this) closeAccountSettingsModal();
+    });
+
+    document.getElementById('termsModal').addEventListener('click', function(e) {
+      if (e.target === this) closeTermsModal();
+    });
+
+    document.getElementById('privacyModal').addEventListener('click', function(e) {
+      if (e.target === this) closePrivacyModal();
+    });
+
+    document.getElementById('cookiesModal').addEventListener('click', function(e) {
+      if (e.target === this) closeCookiesModal();
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeLoginModal();
+        closeAdminModal();
+        closeUsersModal();
+        closeAccountSettingsModal();
+        closeTermsModal();
+        closePrivacyModal();
+        closeCookiesModal();
+      }
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+        const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+        alert(translations[language]['developer-tools-disabled']);
+      }
+    });
+
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      const language = localStorage.getItem('mapQuizLanguage') || 'zh-CN';
+      alert(translations[language]['right-click-disabled']);
+    });
+  </script>
+</body>
+</html>

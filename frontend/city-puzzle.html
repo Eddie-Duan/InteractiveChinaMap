@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中国地图拼图 - 城市拼图</title>
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+    /* 移动端适配基础设置 */
+    @media screen and (max-width: 1200px) {
+      html {
+        font-size: 14px;
+      }
+    }
+    @media screen and (max-width: 768px) {
+      html {
+        font-size: 12px;
+      }
+    }
+
+    body {
+      padding: 20px;
+      background: #f5f7fa;
+      /* 防止移动端横向滚动 */
+      overflow-x: hidden;
+    }
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 30px; /* 主体与底部图片的间距 */
+      /* 适配小屏幕 */
+      width: 100%;
+      padding: 0 10px;
+    }
+    /* 艺术字标题样式 */
+    .title-container {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .art-title {
+      font-size: clamp(24px, 5vw, 48px);
+      font-weight: bold;
+      color: #c8102e;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      font-family: "黄山毛峰书法体", serif;
+      letter-spacing: 8px;
+      /* 适配小屏幕 */
+      letter-spacing: clamp(2px, 1vw, 8px);
+    }
+    /* 输入区样式 */
+    .input-area {
+      text-align: center;
+      margin-bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      /* 适配小屏幕 */
+      flex-wrap: wrap;
+      padding: 0 10px;
+    }
+    #cityInput {
+      width: clamp(200px, 80%, 400px);
+      padding: 12px 16px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    #cityInput:focus {
+      border-color: #409eff;
+    }
+    /* 重置按钮样式 */
+    .reset-btn {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #e6a23c;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+      /* 适配小屏幕 */
+      white-space: nowrap;
+    }
+    .reset-btn:hover {
+      background: #d48806;
+    }
+    .reset-btn:active {
+      background: #b77805;
+    }
+    .error-tip {
+      margin-top: 8px;
+      font-size: 14px;
+      min-height: 20px;
+      flex: 1;
+      width: 100%;
+      text-align: center;
+      padding: 5px;
+    }
+    /* 主体布局：左-中-右 */
+    .main-content {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      justify-content: center;
+      flex: 1;
+      /* 适配小屏幕 */
+      flex-wrap: wrap;
+    }
+    /* 左侧面板：仅城市介绍，优化高度和滚动 */
+    .left-panel {
+      width: clamp(280px, 100%, 320px);
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      height: 600px;
+      overflow-y: auto;
+      /* 适配小屏幕 */
+      flex: 1 1 280px;
+      min-width: 280px;
+    }
+    .left-panel h3 {
+      margin-bottom: 15px;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 10;
+    }
+    .wiki-content {
+      line-height: 1.8;
+      color: #444;
+    }
+    .wiki-content h4 {
+      color: #c8102e;
+      margin: 10px 0 15px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .wiki-content p {
+      margin-bottom: 12px;
+      text-indent: 2em;
+    }
+    .wiki-content .empty-tip {
+      color: #999;
+      text-align: center;
+      margin-top: 100px;
+      font-size: 16px;
+      line-height: 2;
+    }
+    /* 数据表格样式 */
+    .info-table {
+      width: 100%;
+      margin-bottom: 15px;
+      border-collapse: collapse;
+    }
+    .info-table td {
+      padding: 6px 8px;
+      border: 1px solid #eee;
+      font-size: 13px;
+    }
+    .info-table td:first-child {
+      background: #f8f9fa;
+      font-weight: bold;
+      width: 80px;
+      color: #666;
+    }
+    /* 地图容器 */
+    .map-container {
+      flex: 1 1 600px;
+      min-width: 300px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      height: 600px;
+      position: relative;
+      overflow: hidden;
+      min-height: 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* 地图控制按钮样式 */
+    .map-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .control-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.9);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .control-btn:hover {
+      background: rgba(255,255,255,1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transform: translateY(-2px);
+    }
+
+    .control-btn:active {
+      transform: translateY(0);
+    }
+
+    .direction-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 5px;
+    }
+
+    .horizontal-controls {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+    }
+    
+    /* 响应式控制按钮布局 */
+    @media screen and (max-width: 576px) {
+      .control-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+      
+      .horizontal-controls {
+        gap: 3px;
+      }
+      
+      .direction-controls {
+        gap: 3px;
+      }
+    }
+    /* SVG地图样式 */
+    #chinaMap {
+      transform-origin: center center;
+      transition: transform 0.3s ease;
+      position: relative;
+      margin: 0 auto;
+    }
+    /* 城市样式 */
+    .city {
+      fill: #cccccc;
+      stroke: #999;
+      stroke-width: 0.5;
+      cursor: pointer;
+      transition: fill 0.3s ease;
+    }
+    .city.active {
+      stroke: #333;
+      stroke-width: 1;
+    }
+    /* 城市配色 - 使用不同的颜色 */
+    .city.active {
+      fill: #409eff;
+    }
+    /* 右侧面板 */
+    .right-panel {
+      width: clamp(280px, 100%, 320px);
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      height: 600px;
+      /* 适配小屏幕 */
+      flex: 1 1 280px;
+      min-width: 280px;
+      display: flex;
+      flex-direction: column;
+    }
+    .right-panel h3 {
+      margin-bottom: 15px;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+      flex-shrink: 0;
+    }
+    #correctList {
+      list-style: none;
+      max-height: 350px;
+      overflow-y: auto;
+      flex-grow: 1;
+      margin-bottom: 15px;
+      /* 自定义滚动条样式 */
+      scrollbar-width: thin;
+      scrollbar-color: #409eff #f0f0f0;
+    }
+
+    /* 自定义滚动条 */
+    #correctList::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #correctList::-webkit-scrollbar-track {
+      background: #f0f0f0;
+      border-radius: 3px;
+    }
+
+    #correctList::-webkit-scrollbar-thumb {
+      background: #409eff;
+      border-radius: 3px;
+    }
+
+    #correctList::-webkit-scrollbar-thumb:hover {
+      background: #66b1ff;
+    }
+
+    .error-count {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+      color: #666;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    #correctList li {
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      background: #e8f4ff;
+      border-radius: 5px;
+      color: #307cc2;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #correctList li:hover {
+      background: #d1e7ff;
+    }
+    /* 底部中间图片容器 */
+    .bottom-img-container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      margin-top: 10px;
+      /* 适配小屏幕 */
+      overflow: hidden;
+    }
+    .china-img {
+      max-width: 100%;
+      max-height: 400px; /* 限制图片最大高度，可自行调整 */
+      object-fit: contain;
+      border-radius: 8px;
+      /* 适配小屏幕 */
+      max-height: clamp(200px, 50vw, 400px);
+    }
+
+    /* 竖屏布局优化 */
+    @media screen and (max-width: 992px) {
+      .main-content {
+        flex-direction: column;
+        align-items: center;
+      }
+      .left-panel, .right-panel {
+        width: 100%;
+        height: 300px;
+      }
+      .map-container {
+        width: 100%;
+        height: 500px;
+      }
+    }
+
+    @media screen and (max-width: 576px) {
+      .map-container {
+        height: 400px;
+      }
+      .left-panel, .right-panel {
+        height: 250px;
+      }
+    }
+
+    /* 模式标题和退出按钮 */
+    .mode-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .mode-title {
+      font-size: 28px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .exit-btn {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #606266;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .exit-btn:hover {
+      background: #4e5969;
+    }
+
+    /* 成就动画样式 */
+    .achievement-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      display: none;
+    }
+
+    .achievement-popup {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: rgba(255,255,255,0.95);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      animation: achievementPopup 3s ease-in-out forwards;
+      min-width: 300px;
+      border: 4px solid #c8102e;
+    }
+
+    .achievement-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+      animation: achievementBounce 1s ease-in-out 0.5s;
+    }
+
+    .achievement-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+      animation: achievementFadeIn 1s ease-in-out 1s both;
+    }
+
+    .achievement-desc {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 20px;
+      animation: achievementFadeIn 1s ease-in-out 1.2s both;
+    }
+
+    @keyframes achievementPopup {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      20% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+      30% { transform: translate(-50%, -50%) scale(0.95); }
+      40% { transform: translate(-50%, -50%) scale(1); }
+      80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
+
+    @keyframes achievementBounce {
+      0%, 20%, 53%, 80%, 100% {
+        transform: translate3d(0,0,0);
+      }
+      40%, 43% {
+        transform: translate3d(0, -30px, 0);
+      }
+      70% {
+        transform: translate3d(0, -15px, 0);
+      }
+      90% {
+        transform: translate3d(0,-4px,0);
+      }
+    }
+
+    @keyframes achievementFadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 答题进度条样式 */
+    .progress-container {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .progress-title {
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .progress-text {
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .progress-bar-wrapper {
+      width: 100%;
+      height: 30px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #4caf50, #8bc34a, #cddc39);
+      background-size: 200% 100%;
+      border-radius: 15px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: progressShine 2s ease-in-out infinite;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-bar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: progressGlow 1.5s ease-in-out infinite;
+    }
+
+    @keyframes progressShine {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    @keyframes progressGlow {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* 进度条完成动画 */
+    .progress-bar.complete {
+      background: linear-gradient(90deg, #ffd700, #ffec8b, #ffd700);
+      animation: completePulse 0.5s ease-in-out 3;
+    }
+
+    @keyframes completePulse {
+      0%, 100% { transform: scaleX(1); }
+      50% { transform: scaleX(1.02); }
+    }
+  </style>
+
+    <script src="city-data.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- 模式标题和退出按钮 -->
+    <div class="mode-header">
+      <h2 class="mode-title">城市拼图</h2>
+      <button class="exit-btn" onclick="location.href='puzzle-select.html'">返回选择</button>
+    </div>
+
+    <!-- 顶部输入区 -->
+    <div class="input-area">
+      <input 
+        type="text" 
+        id="cityInput" 
+        placeholder="请输入市级行政区完整名称（回车确认）"
+        autocomplete="off"
+      >
+      <button id="resetBtn" class="reset-btn">重置</button>
+      <div class="error-tip" id="errorTip"></div>
+    </div>
+
+    <!-- 答题进度条 -->
+    <div class="progress-container">
+      <div class="progress-header">
+        <span class="progress-title">🎯 答题进度</span>
+        <span class="progress-text" id="progressText">0 / 0</span>
+      </div>
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+    </div>
+
+    <!-- 主体布局：左-中-右 -->
+    <div class="main-content">
+      <!-- 左侧：城市介绍 -->
+      <div class="left-panel">
+        <h3>城市介绍</h3>
+        <div id="wikiContent" class="wiki-content"></div>
+      </div>
+
+      <!-- 中间:地图容器 -->
+      <div class="map-container" id="mapContainer">
+      </div>
+
+      <!-- 右侧：已答对城市列表 -->
+      <div class="right-panel">
+        <h3>已答对城市</h3>
+        <ul id="correctList"></ul>
+        <div class="error-count">
+          错误次数：<span id="errorCount">0</span>
+        </div>
+        <!-- 地图控制按钮 -->
+        <div class="map-controls">
+          
+          <div class="direction-controls">
+            <div class="horizontal-controls">
+              <button id="zoomIn" class="control-btn">+</button>
+              <button id="zoomOut" class="control-btn">-</button>
+            </div>
+            <div class="horizontal-controls">
+              <button id="moveUp" class="control-btn">↑</button> 
+              <button id="moveDown" class="control-btn">↓</button>
+            </div>
+            <div class="horizontal-controls">
+              <button id="moveLeft" class="control-btn">←</button>
+              <button id="moveRight" class="control-btn">→</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部中间图片容器 -->
+    <div class="bottom-img-container">
+        <img src="images/china.jpg" alt="中国一点也不能少" class="china-img">
+      </div>
+    </div>
+
+    <!-- 成就动画容器 -->
+    <div class="achievement-animation" id="achievementAnimation"></div>
+
+  <script>
+    // 城市名称与SVG id的映射
+    const cityMap = {
+      "北京市": "beijing",
+      "天津市": "tianjin",
+      "上海市": "shanghai",
+      "重庆市": "chongqing",
+      "香港特别行政区": "hongkong",
+      "澳门特别行政区": "macau",
+      "台北市": "taipei",
+      "高雄市": "kaohsiung",
+      "台南市": "tainan",
+      "台中市": "taichung",
+      "新竹市": "hsinchu",
+      "嘉义市": "chiayi",
+      "基隆市": "keelung",
+      "石家庄市": "shijiazhuang",
+      "唐山市": "tangshan",
+      "秦皇岛市": "qinhuangdao",
+      "邯郸市": "handan",
+      "邢台市": "xingtai",
+      "保定市": "baoding",
+      "张家口市": "zhangjiakou",
+      "承德市": "chengde",
+      "沧州市": "cangzhou",
+      "廊坊市": "langfang",
+      "衡水市": "hengshui",
+      "太原市": "taiyuan",
+      "大同市": "datong",
+      "阳泉市": "yangquan",
+      "长治市": "changzhi",
+      "晋城市": "jincheng",
+      "朔州市": "shuozhou",
+      "晋中市": "jinzhong",
+      "运城市": "yuncheng",
+      "忻州市": "xinzhou",
+      "临汾市": "linfen",
+      "吕梁市": "lvliang",
+      "呼和浩特市": "hohhot",
+      "包头市": "baotou",
+      "乌海市": "wuhai",
+      "赤峰市": "chifeng",
+      "通辽市": "tongliao",
+      "鄂尔多斯市": "eerduosi",
+      "呼伦贝尔市": "hulunbuir",
+      "巴彦淖尔市": "bayannaoer",
+      "乌兰察布市": "wulanchabu",
+      "沈阳市": "shenyang",
+      "大连市": "dalian",
+      "鞍山市": "anshan",
+      "抚顺市": "fushun",
+      "本溪市": "benxi",
+      "丹东市": "dandong",
+      "锦州市": "jinzhou",
+      "营口市": "yingkou",
+      "阜新市": "fuxin",
+      "辽阳市": "liaoyang",
+      "盘锦市": "panjin",
+      "铁岭市": "tieling",
+      "朝阳市": "chaoyang",
+      "葫芦岛市": "huludao",
+      "长春市": "changchun",
+      "吉林市": "jilin",
+      "四平市": "siping",
+      "辽源市": "liaoyuan",
+      "通化市": "tonghua",
+      "白山市": "baishan",
+      "松原市": "songyuan",
+      "白城市": "baicheng",
+      "哈尔滨市": "haerbin",
+      "齐齐哈尔市": "qiqihar",
+      "鸡西市": "jixi",
+      "鹤岗市": "hegang",
+      "双鸭山市": "shuangyashan",
+      "大庆市": "daqing",
+      "伊春市": "yichun",
+      "佳木斯市": "jiamusi",
+      "七台河市": "qitaihe",
+      "牡丹江市": "mudanjiang",
+      "黑河市": "heihe",
+      "绥化市": "suihua",
+      "南京市": "nanjing",
+      "无锡市": "wuxi",
+      "徐州市": "xuzhou",
+      "常州市": "changzhou",
+      "苏州市": "suzhou",
+      "南通市": "nantong",
+      "连云港市": "lianyungang",
+      "淮安市": "huaian",
+      "盐城市": "yancheng",
+      "扬州市": "yangzhou",
+      "镇江市": "zhenjiang",
+      "泰州市": "taizhou",
+      "宿迁市": "suqian",
+      "杭州市": "hangzhou",
+      "宁波市": "ningbo",
+      "温州市": "wenzhou",
+      "嘉兴市": "jiaxing",
+      "湖州市": "huzhou",
+      "绍兴市": "shaoxing",
+      "金华市": "jinhua",
+      "衢州市": "quzhou",
+      "舟山市": "zhoushan",
+      "台州市": "taizhou",
+      "丽水市": "lishui",
+      "合肥市": "hefei",
+      "芜湖市": "wuhu",
+      "蚌埠市": "bengbu",
+      "淮南市": "huainan",
+      "马鞍山市": "maanshan",
+      "淮北市": "huaibei",
+      "铜陵市": "tongling",
+      "安庆市": "anqing",
+      "黄山市": "huangshan",
+      "滁州市": "chuzhou",
+      "阜阳市": "fuyang",
+      "宿州市": "suzhou",
+      "六安市": "luan",
+      "亳州市": "bozhou",
+      "池州市": "chizhou",
+      "宣城市": "xuancheng",
+      "福州市": "fuzhou",
+      "厦门市": "xiamen",
+      "莆田市": "putian",
+      "三明市": "sanming",
+      "泉州市": "quanzhou",
+      "漳州市": "zhangzhou",
+      "南平市": "nanping",
+      "龙岩市": "longyan",
+      "宁德市": "ningde",
+      "南昌市": "nanchang",
+      "景德镇市": "jingdezhen",
+      "萍乡市": "pingxiang",
+      "九江市": "jiujiang",
+      "新余市": "xinyu",
+      "鹰潭市": "yingtan",
+      "赣州市": "ganzhou",
+      "吉安市": "jian",
+      "宜春市": "yichun",
+      "抚州市": "fuzhou",
+      "上饶市": "shangrao",
+      "济南市": "jinan",
+      "青岛市": "qingdao",
+      "淄博市": "zibo",
+      "枣庄市": "zaozhuang",
+      "东营市": "dongying",
+      "烟台市": "yantai",
+      "潍坊市": "weifang",
+      "济宁市": "jining",
+      "泰安市": "taian",
+      "威海市": "weihai",
+      "日照市": "rizhao",
+      "临沂市": "linyi",
+      "德州市": "dezhou",
+      "聊城市": "liaocheng",
+      "滨州市": "binzhou",
+      "菏泽市": "heze",
+      "郑州市": "zhengzhou",
+      "开封市": "kaifeng",
+      "洛阳市": "luoyang",
+      "平顶山市": "pingdingshan",
+      "安阳市": "anyang",
+      "鹤壁市": "hebi",
+      "新乡市": "xinxiang",
+      "焦作市": "jiaozuo",
+      "濮阳市": "puyang",
+      "许昌市": "xuchang",
+      "漯河市": "luohe",
+      "三门峡市": "sanmenxia",
+      "南阳市": "nanyang",
+      "商丘市": "shangqiu",
+      "信阳市": "xinyang",
+      "周口市": "zhoukou",
+      "驻马店市": "zhumadian",
+      "济源市": "jiyuan",
+      "武汉市": "wuhan",
+      "黄石市": "huangshi",
+      "十堰市": "shiyan",
+      "宜昌市": "yichang",
+      "襄阳市": "xiangyang",
+      "鄂州市": "ezhou",
+      "荆门市": "jingmen",
+      "孝感市": "xiaogan",
+      "荆州市": "jingzhou",
+      "黄冈市": "huanggang",
+      "咸宁市": "xianning",
+      "随州市": "suizhou",
+      "恩施市": "enshi",
+      "长沙市": "changsha",
+      "株洲市": "zhuzhou",
+      "湘潭市": "xiangtan",
+      "衡阳市": "hengyang",
+      "邵阳市": "shaoyang",
+      "岳阳市": "yueyang",
+      "常德市": "changde",
+      "张家界市": "zhangjiajie",
+      "益阳市": "yiyang",
+      "郴州市": "chenzhou",
+      "永州市": "yongzhou",
+      "怀化市": "huaihua",
+      "娄底市": "loudi",
+      "广州市": "guangzhou",
+      "韶关市": "shaoguan",
+      "深圳市": "shenzhen",
+      "珠海市": "zhuhai",
+      "汕头市": "shantou",
+      "佛山市": "foshan",
+      "江门市": "jiangmen",
+      "湛江市": "zhanjiang",
+      "茂名市": "maoming",
+      "肇庆市": "zhaoqing",
+      "惠州市": "huizhou",
+      "梅州市": "meizhou",
+      "汕尾市": "shanwei",
+      "河源市": "heyuan",
+      "阳江市": "yangjiang",
+      "清远市": "qingyuan",
+      "东莞市": "dongguan",
+      "中山市": "zhongshan",
+      "潮州市": "chaozhou",
+      "揭阳市": "jieyang",
+      "云浮市": "yunfu",
+      "南宁市": "nanning",
+      "柳州市": "liuzhou",
+      "桂林市": "guilin",
+      "梧州市": "wuzhou",
+      "北海市": "beihai",
+      "防城港市": "fangchenggang",
+      "钦州市": "qinzhou",
+      "贵港市": "guigang",
+      "玉林市": "yulin",
+      "百色市": "baise",
+      "贺州市": "hezhou",
+      "河池市": "hechi",
+      "来宾市": "laibin",
+      "崇左市": "chongzuo",
+      "海口市": "haikou",
+      "三亚市": "sanya",
+      "三沙市": "sansha",
+      "儋州市": "danzhou",
+      "成都市": "chengdu",
+      "自贡市": "zigong",
+      "攀枝花市": "panzhihua",
+      "泸州市": "luzhou",
+      "德阳市": "deyang",
+      "绵阳市": "mianyang",
+      "广元市": "guangyuan",
+      "遂宁市": "suining",
+      "内江市": "neijiang",
+      "乐山市": "leshan",
+      "南充市": "nanchong",
+      "眉山市": "meishan",
+      "宜宾市": "yibin",
+      "广安市": "guangan",
+      "达州市": "dazhou",
+      "雅安市": "yaan",
+      "巴中市": "bazhong",
+      "资阳市": "ziyang",
+      "贵阳市": "guiyang",
+      "六盘水市": "liupanshui",
+      "遵义市": "zunyi",
+      "安顺市": "anshun",
+      "毕节市": "bijie",
+      "铜仁市": "tongren",
+      "昆明市": "kunming",
+      "曲靖市": "qujing",
+      "玉溪市": "yuxi",
+      "保山市": "baoshan",
+      "昭通市": "zhaotong",
+      "丽江市": "lijiang",
+      "普洱市": "puer",
+      "临沧市": "lincang",
+      "拉萨市": "lhasa",
+      "日喀则市": "rikaze",
+      "昌都市": "changdu",
+      "林芝市": "linzhi",
+      "山南市": "shannan",
+      "那曲市": "naqu",
+      "西安市": "xian",
+      "铜川市": "tongchuan",
+      "宝鸡市": "baoji",
+      "咸阳市": "xianyang",
+      "渭南市": "weinan",
+      "延安市": "yanan",
+      "汉中市": "hanzhong",
+      "榆林市": "yulin",
+      "安康市": "ankang",
+      "商洛市": "shangluo",
+      "兰州市": "lanzhou",
+      "嘉峪关市": "jiayuguan",
+      "金昌市": "jinchang",
+      "白银市": "baiyin",
+      "天水市": "tianshui",
+      "武威市": "wuwei",
+      "张掖市": "zhangye",
+      "平凉市": "pingliang",
+      "酒泉市": "jiuquan",
+      "庆阳市": "qingyang",
+      "定西市": "dingxi",
+      "陇南市": "longnan",
+      "西宁市": "xining",
+      "海东市": "haidong",
+      "银川市": "yinchuan",
+      "石嘴山市": "shizuishan",
+      "吴忠市": "wuzhong",
+      "固原市": "guyuan",
+      "中卫市": "zhongwei",
+      "乌鲁木齐市": "wulumuqi",
+      "克拉玛依市": "kelamayi",
+      "吐鲁番市": "tulufan",
+      "哈密市": "hami"
+    };
+
+    // 城市数据：从JSON文件加载
+    let cityData = {};
+    
+    // 加载城市数据
+    async function loadCityData() {
+      try {
+        const response = await fetch('city-data.json');
+        cityData = await response.json();
+        console.log('城市数据加载成功');
+      } catch (error) {
+        console.error('加载城市数据失败:', error);
+        // 使用默认数据
+        cityData = {};
+      }
+    }
+
+    // 全局状态
+    let guessed = new Set(); 
+    let errorCount = 0;
+    let zoomScale = 1; // 缩放比例
+    const zoomStep = 0.1; // 缩放步长
+    const maxZoom = 2; // 最大缩放
+    const minZoom = 0.5; // 最小缩放
+    const totalCityCount = Object.keys(cityMap).length;
+    let mapX = 0; // 地图X轴平移位置
+    let mapY = 0; // 地图Y轴平移位置
+    const moveStep = 50; // 移动步长
+
+    // DOM元素获取
+    const input = document.getElementById("cityInput");
+    const errorTip = document.getElementById("errorTip");
+    const correctList = document.getElementById("correctList");
+    const errorCountEl = document.getElementById("errorCount");
+    const mapContainer = document.getElementById("mapContainer");
+    const wikiContent = document.getElementById("wikiContent"); 
+    const zoomInBtn = document.getElementById("zoomIn");
+    const zoomOutBtn = document.getElementById("zoomOut");
+    const resetBtn = document.getElementById("resetBtn");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+    
+    // 更新进度条函数
+    function updateProgress() {
+      const progress = (guessed.size / totalCityCount) * 100;
+      progressBar.style.width = `${progress}%`;
+      progressText.textContent = `${guessed.size} / ${totalCityCount}`;
+      
+      // 检查是否完成
+      if (guessed.size === totalCityCount) {
+        progressBar.classList.add('complete');
+      } else {
+        progressBar.classList.remove('complete');
+      }
+    }
+
+    // 创建胜利提示元素
+    function createVictoryTip() {
+      const victoryEl = document.createElement('div');
+      victoryEl.id = 'victoryTip';
+      victoryEl.style.position = 'absolute';
+      victoryEl.style.top = '50%';
+      victoryEl.style.left = '50%';
+      victoryEl.style.transform = 'translate(-50%, -50%)';
+      victoryEl.style.fontSize = '36px';
+      victoryEl.style.fontWeight = 'bold';
+      victoryEl.style.color = '#c8102e';
+      victoryEl.style.textAlign = 'center';
+      victoryEl.style.textShadow = '2px 2px 4px rgba(0,0,0,0.3)';
+      victoryEl.style.zIndex = '999';
+      victoryEl.style.whiteSpace = 'pre-line';
+      victoryEl.style.background = 'rgba(255,255,255,0.9)';
+      victoryEl.style.padding = '30px 50px';
+      victoryEl.style.borderRadius = '10px';
+      victoryEl.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
+      victoryEl.textContent = '恭喜！\n完成城市拼图！';
+      return victoryEl;
+    }
+
+    // 检查是否全部答对
+    function checkAllGuessed() {
+      if (guessed.size === totalCityCount) {
+        // 移除已存在的胜利提示
+        const oldVictory = document.getElementById('victoryTip');
+        if (oldVictory) oldVictory.remove();
+        // 添加新的胜利提示
+        mapContainer.appendChild(createVictoryTip());
+      }
+    }
+
+    // 加载SVG地图
+    async function loadMap() {
+      try {
+        const response = await fetch('assets/PRC_city.svg');
+        const svgText = await response.text();
+        mapContainer.innerHTML = svgText;
+        // 给SVG添加id
+        const svgElement = mapContainer.querySelector('svg');
+        if (svgElement) {
+          svgElement.id = 'chinaMap';
+        }
+        // 给城市添加class
+        document.querySelectorAll('svg path, svg polygon, svg rect').forEach(elem => {
+          if (elem.id) elem.classList.add('city');
+        });
+        // 调整地图大小
+        resizeMap();
+      } catch (err) {
+        console.error('地图加载失败:', err);
+        wikiContent.innerHTML = '<div class="empty-tip">输入正确答案，获取城市介绍<br>需要先为城市SVG添加id</div>';
+      }
+    }
+
+    // 获取城市介绍
+    function getCityIntro(cityName) {
+      const data = cityData[cityName];
+      if (data) {
+        return `
+          <h4>${cityName}</h4>
+          <table class="info-table">
+            <tr><td>行政区划代码</td><td>${data.code}</td></tr>
+            <tr><td>车牌代码</td><td>${data.plate}</td></tr>
+            <tr><td>人口</td><td>${data.population}</td></tr>
+            <tr><td>面积</td><td>${data.area}</td></tr>
+            <tr><td>GDP</td><td>${data.gdp}</td></tr>
+            <tr><td>下辖区县</td><td>${data.districts}</td></tr>
+          </table>
+          <p>${data.intro}</p>
+        `;
+      }
+      return `<h4>${cityName}</h4><p>暂无该城市的详细介绍。</p>`;
+    }
+
+    // 显示城市介绍
+    function showCityIntro(cityName) {
+      wikiContent.innerHTML = getCityIntro(cityName);
+      // 滚动到顶部，方便查看
+      wikiContent.scrollTop = 0;
+    }
+
+    // 回车监听
+    input.addEventListener('keyup', (e) => {
+      if (e.key !== 'Enter') return;
+      const inputVal = input.value.trim();
+      input.value = '';
+      errorTip.textContent = '';
+
+      // 处理关键词
+      if (inputVal === "不知道") {
+        showTip('加油', 'success');
+        return;
+      }
+      
+      // 空输入校验
+      if (!inputVal) {
+        showTip('请输入城市名称', 'error');
+        return;
+      }
+
+      // 有效性校验
+      if (!cityMap[inputVal]) {
+        errorCount++;
+        errorCountEl.textContent = errorCount;
+        showTip('❌ 加油！再想想～', 'error');
+        return;
+      }
+
+      // 重复校验
+      if (guessed.has(inputVal)) {
+        showTip('✅ 该城市已答过', 'success');
+        showCityIntro(inputVal);
+        return;
+      }
+
+      // 答对逻辑
+      guessed.add(inputVal);
+      showTip('✅ 回答正确', 'success');
+      // 保存统计数据
+      saveCityPuzzleStats(guessed.size);
+      // 发送城市统计
+      sendCityStats(inputVal);
+      // 记录答题结果
+      recordAnswerToServer(true);
+      // 添加到右侧列表
+      const li = document.createElement('li');
+      li.textContent = inputVal;
+      li.addEventListener('click', () => showCityIntro(inputVal));
+      correctList.appendChild(li);
+      // 显示城市介绍
+      showCityIntro(inputVal);
+      // 更新进度条
+      updateProgress();
+      // 检查是否全部答对
+      checkAllGuessed();
+    });
+
+    // 提示工具
+    function showTip(text, type) {
+      errorTip.textContent = text;
+      errorTip.style.color = type === 'error' ? '#f56c6c' : '#67c23a';
+    }
+
+    // 重置游戏功能
+    function resetGame() {
+      // 重置全局状态
+      guessed = new Set();
+      errorCount = 0;
+      zoomScale = 1;
+      mapX = 0; // 重置地图X轴平移位置
+      mapY = 0; // 重置地图Y轴平移位置
+      
+      // 重置DOM显示
+      errorCountEl.textContent = '0';
+      errorTip.textContent = '';
+      correctList.innerHTML = '';
+      wikiContent.innerHTML = '<div class="empty-tip">请输入并答对城市名称<br>查看详细城市介绍</div>';
+      
+      // 重置地图样式
+      const chinaMap = document.getElementById("chinaMap");
+      if (chinaMap) {
+        resizeMap(); // 调用resizeMap恢复默认状态
+      }
+      
+      // 重置城市颜色（确保移除所有active类）
+      const cities = document.querySelectorAll('svg path, svg polygon, svg rect');
+      cities.forEach(elem => {
+        if (elem.id) {
+          elem.classList.remove('active');
+        }
+      });
+      
+      // 移除胜利提示
+      const victoryTip = document.getElementById('victoryTip');
+      if (victoryTip) {
+        victoryTip.remove();
+      }
+      
+      // 聚焦输入框
+      input.focus();
+      showTip('🔄 已重置，重新开始吧！', 'success');
+      
+      // 更新进度条
+      updateProgress();
+    }
+
+    // 调整地图大小以适应容器
+    function resizeMap() {
+      const chinaMap = document.getElementById("chinaMap");
+      if (!chinaMap) return;
+      
+      const mapContainer = document.getElementById("mapContainer");
+      // 使用offsetWidth和offsetHeight以获取实际显示尺寸
+      const containerWidth = mapContainer.offsetWidth - 40; // 减去padding
+      const containerHeight = mapContainer.offsetHeight - 40; // 减去padding
+      
+      // 获取SVG的实际宽高
+      const svgWidth = 878; // SVG原始宽度
+      const svgHeight = 434; // SVG原始高度
+      const mapRatio = svgWidth / svgHeight; // SVG原始宽高比
+      const containerRatio = containerWidth / containerHeight;
+      
+      let scale;
+      if (containerRatio > mapRatio) {
+        // 容器更宽，以高度为基准
+        scale = containerHeight / svgHeight;
+      } else {
+        // 容器更高，以宽度为基准
+        scale = containerWidth / svgWidth;
+      }
+      
+      // 确保地图始终在容器中央，并且不会被遮挡
+      chinaMap.style.width = `${svgWidth}px`;
+      chinaMap.style.height = `${svgHeight}px`;
+      chinaMap.style.transform = `translate(-50%, -50%) scale(${zoomScale * scale}) translate(${mapX}px, ${mapY}px)`;
+      chinaMap.style.transformOrigin = 'center center';
+      chinaMap.style.position = 'absolute';
+      chinaMap.style.left = '50%';
+      chinaMap.style.top = '50%';
+      chinaMap.style.margin = '0';
+    }
+
+    // 放大地图
+    function zoomIn() {
+      if (zoomScale < maxZoom) {
+        zoomScale += zoomStep;
+        resizeMap();
+      }
+    }
+
+    // 缩小地图
+    function zoomOut() {
+      if (zoomScale > minZoom) {
+        zoomScale -= zoomStep;
+        resizeMap();
+      }
+    }
+
+    // 移动地图
+    function moveMap(dx, dy) {
+      mapX += dx;
+      mapY += dy;
+      resizeMap();
+    }
+
+    // 发送城市统计数据到服务器
+    async function sendCityStats(cityName) {
+      try {
+        await fetch('/api/puzzle-stats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'city', name: cityName })
+        });
+      } catch (error) {
+        console.error('发送城市统计失败:', error);
+      }
+    }
+
+    // 记录答题结果到服务器
+    async function recordAnswerToServer(correct) {
+      try {
+        const userId = getUserId();
+        const mode = 'city-puzzle';
+        await fetch('/api/record-answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, correct, mode })
+        });
+      } catch (error) {
+        console.error('记录答题结果失败:', error);
+      }
+    }
+
+    // 获取用户ID
+    function getUserId() {
+      const isAdmin = sessionStorage.getItem('chinaMapAdmin') === 'true';
+      if (isAdmin) return 'admin';
+      const username = localStorage.getItem('chinaMapUsername');
+      if (username) {
+        return username;
+      }
+      return 'guest';
+    }
+
+    // 保存城市拼图统计数据到服务器
+    async function saveCityPuzzleStats(correctCount) {
+      const userId = getUserId();
+      if (userId === 'guest') return;
+      
+      try {
+        await fetch('/api/save-achievement', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: userId,
+            achievements: {},
+            stats: {
+              puzzleCityCorrect: correctCount,
+              puzzleCityStreak: consecutiveCorrect
+            }
+          })
+        });
+      } catch (error) {
+        console.error('保存城市拼图统计数据失败:', error);
+      }
+    }
+
+    // 页面初始化
+    window.addEventListener('DOMContentLoaded', async () => {
+      // 加载城市数据
+      await loadCityData();
+      
+      loadMap();
+      
+      // 初始化进度条
+      updateProgress();
+      
+      // 绑定缩放按钮事件
+      const zoomInBtn = document.getElementById('zoomIn');
+      const zoomOutBtn = document.getElementById('zoomOut');
+      if (zoomInBtn) zoomInBtn.addEventListener('click', zoomIn);
+      if (zoomOutBtn) zoomOutBtn.addEventListener('click', zoomOut);
+      
+      // 绑定方向按钮事件
+      const moveUpBtn = document.getElementById('moveUp');
+      const moveDownBtn = document.getElementById('moveDown');
+      const moveLeftBtn = document.getElementById('moveLeft');
+      const moveRightBtn = document.getElementById('moveRight');
+      
+      if (moveUpBtn) moveUpBtn.addEventListener('click', () => moveMap(0, -moveStep));
+      if (moveDownBtn) moveDownBtn.addEventListener('click', () => moveMap(0, moveStep));
+      if (moveLeftBtn) moveLeftBtn.addEventListener('click', () => moveMap(-moveStep, 0));
+      if (moveRightBtn) moveRightBtn.addEventListener('click', () => moveMap(moveStep, 0));
+      
+      // 绑定重置按钮事件
+      const resetBtn = document.getElementById('resetBtn');
+      if (resetBtn) resetBtn.addEventListener('click', resetGame);
+      
+      // 绑定窗口大小变化事件
+      window.addEventListener('resize', resizeMap);
+      
+      // 初始调整地图大小
+      setTimeout(resizeMap, 100);
+      
+      // 初始提示
+      wikiContent.innerHTML = '<div class="empty-tip">请输入并答对城市名称<br>查看详细城市介绍<br>需要先为PRC_city.svg添加城市id</div>';
+    });
+  </script>
+
+  <!-- 备案号 -->
+  <div style="text-align: center; padding: 20px; font-size: 12px; color: #999;">
+    <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" style="color: #999; text-decoration: none;">
+      京 ICP 备 30177588458417371 号
+    </a>
+  </div>
+</body>
+</html>

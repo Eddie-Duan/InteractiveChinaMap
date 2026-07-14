@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中国地图拼图 - 省份拼图</title>
+  <link rel="icon" href="images/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
+    /* 移动端适配基础设置 */
+    @media screen and (max-width: 1200px) {
+      html {
+        font-size: 14px;
+      }
+    }
+    @media screen and (max-width: 768px) {
+      html {
+        font-size: 12px;
+      }
+    }
+
+    body {
+      padding: 20px;
+      background: #f5f7fa;
+      /* 防止移动端横向滚动 */
+      overflow-x: hidden;
+    }
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 30px; /* 主体与底部图片的间距 */
+      /* 适配小屏幕 */
+      width: 100%;
+      padding: 0 10px;
+    }
+    /* 艺术字标题样式 */
+    .title-container {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    .art-title {
+      font-size: clamp(24px, 5vw, 48px);
+      font-weight: bold;
+      color: #c8102e;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+      font-family: "黄山毛峰书法体", serif;
+      letter-spacing: 8px;
+      /* 适配小屏幕 */
+      letter-spacing: clamp(2px, 1vw, 8px);
+    }
+    /* 输入区样式 */
+    .input-area {
+      text-align: center;
+      margin-bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      /* 适配小屏幕 */
+      flex-wrap: wrap;
+      padding: 0 10px;
+    }
+    #provinceInput {
+      width: clamp(200px, 80%, 400px);
+      padding: 12px 16px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    #provinceInput:focus {
+      border-color: #409eff;
+    }
+    /* 重置按钮样式 */
+    .reset-btn {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      background: #e6a23c;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+      /* 适配小屏幕 */
+      white-space: nowrap;
+    }
+    .reset-btn:hover {
+      background: #d48806;
+    }
+    .reset-btn:active {
+      background: #b77805;
+    }
+    .error-tip {
+      margin-top: 8px;
+      font-size: 14px;
+      min-height: 20px;
+      flex: 1;
+      width: 100%;
+      text-align: center;
+      padding: 5px;
+    }
+    /* 主体布局：左中右 */
+    .main-content {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      justify-content: center;
+      flex: 1;
+      /* 适配小屏幕 */
+      flex-wrap: wrap;
+    }
+    /* 左侧面板：仅省份介绍，优化高度和滚动 */
+    .left-panel {
+      width: clamp(280px, 100%, 320px);
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      height: 600px;
+      overflow-y: auto;
+      /* 适配小屏幕 */
+      flex: 1 1 280px;
+      min-width: 280px;
+    }
+    .left-panel h3 {
+      margin-bottom: 15px;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+      position: sticky;
+      top: 0;
+      background: #fff;
+      z-index: 10;
+    }
+    .wiki-content {
+      line-height: 1.8;
+      color: #444;
+    }
+    .wiki-content h4 {
+      color: #c8102e;
+      margin: 10px 0 15px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .wiki-content p {
+      margin-bottom: 12px;
+      text-indent: 2em;
+    }
+    .wiki-content .empty-tip {
+      color: #999;
+      text-align: center;
+      margin-top: 100px;
+      font-size: 16px;
+      line-height: 2;
+    }
+    /* 数据表格样式 */
+    .info-table {
+      width: 100%;
+      margin-bottom: 15px;
+      border-collapse: collapse;
+    }
+    .info-table td {
+      padding: 6px 8px;
+      border: 1px solid #eee;
+      font-size: 13px;
+    }
+    .info-table td:first-child {
+      background: #f8f9fa;
+      font-weight: bold;
+      width: 80px;
+      color: #666;
+    }
+    /* 地图容器 */
+    .map-container {
+      flex: 1 1 600px;
+      min-width: 300px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      height: 600px;
+      position: relative;
+      overflow: hidden;
+      min-height: 400px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* 地图控制按钮样式 */
+    .map-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+    }
+
+    .control-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .control-btn:active {
+      transform: translateY(0);
+    }
+
+    .direction-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 5px;
+    }
+
+    .horizontal-controls {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+    }
+    
+    /* 响应式控制按钮布局 */
+    @media screen and (max-width: 576px) {
+      .control-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+      
+      .horizontal-controls {
+        gap: 3px;
+      }
+      
+      .direction-controls {
+        gap: 3px;
+      }
+    }
+    /* SVG地图样式 */
+    #chinaMap {
+      transform-origin: center center;
+      transition: transform 0.3s ease;
+      position: relative;
+      margin: 0 auto;
+    }
+    /* 省份样式 */
+    .province {
+      fill: #cccccc;
+      stroke: #999;
+      stroke-width: 0.8;
+      cursor: pointer;
+      transition: fill 0.3s ease;
+    }
+    .province.active {
+      stroke: #333;
+      stroke-width: 1.2;
+    }
+    /* 省份配色 */
+    #beijing.active { fill: #fa0404; }
+    #tianjin.active { fill: #2d738f; }
+    #hebei.active { fill: #5ed228; }
+    #shanxi.active { fill: #ff9999; }
+    #neimenggu.active { fill: #e6f2cc; }
+    #liaoning.active { fill: #533eb1; }
+    #jilin.active { fill: #4fcc4f; }
+    #heilongjiang.active { fill: #9be006; }
+    #shanghai.active { fill: #ff25ff; }
+    #jiangsu.active { fill: #ffff99; }
+    #zhejiang.active { fill: #71a271; }
+    #anhui.active { fill: #0a86f9; }
+    #fujian.active { fill: #c6a71b; }
+    #jiangxi.active { fill: #ef4106; }
+    #shandong.active { fill: #0698c1; }
+    #henan.active { fill: #ffff99; }
+    #hubei.active { fill: #7632e4; }
+    #hunan.active { fill: #8d0219; }
+    #guangdong.active { fill: #07a5cd; }
+    #guangxi.active { fill: #ccffcc; }
+    #hainan.active { fill: #ffb3b3; }
+    #chongqing.active { fill: #ff9999; }
+    #sichuan.active { fill: #a3565f; }
+    #guizhou.active { fill: #ffcccc; }
+    #yunnan.active { fill: #ccffcc; }
+    #xizang.active { fill: #318ee4; }
+    #shaanxi.active { fill: #a1d852; }
+    #gansu.active { fill: #eaea10; }
+    #qinghai.active { fill: #01fafa; }
+    #ningxia.active { fill: #04c46e; }
+    #xinjiang.active { fill: #dac50a; }
+    #xianggang.active { fill: #7e03f9; }
+    #aomen.active { fill: #003e00; }
+    #taiwan.active { fill: #0303f9; }
+    /* 右侧面板 */
+    .right-panel {
+      width: clamp(280px, 100%, 320px);
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      height: 600px;
+      /* 适配小屏幕 */
+      flex: 1 1 280px;
+      min-width: 280px;
+      display: flex;
+      flex-direction: column;
+    }
+    .right-panel h3 {
+      margin-bottom: 15px;
+      color: #333;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+      flex-shrink: 0;
+    }
+    #correctList {
+      list-style: none;
+      max-height: 350px;
+      overflow-y: auto;
+      flex-grow: 1;
+      margin-bottom: 15px;
+      /* 自定义滚动条样式 */
+      scrollbar-width: thin;
+      scrollbar-color: #409eff #f0f0f0;
+    }
+
+    /* 自定义滚动条 */
+    #correctList::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    #correctList::-webkit-scrollbar-track {
+      background: #f0f0f0;
+      border-radius: 3px;
+    }
+
+    #correctList::-webkit-scrollbar-thumb {
+      background: #409eff;
+      border-radius: 3px;
+    }
+
+    #correctList::-webkit-scrollbar-thumb:hover {
+      background: #66b1ff;
+    }
+
+    .error-count {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+      color: #666;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    #correctList li {
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      background: #e8f3ff;
+      border-radius: 5px;
+      color: #307cc2;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #correctList li:hover {
+      background: #d1e7ff;
+    }
+    .error-count {
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+      color: #666;
+      font-size: 14px;
+    }
+    /* 底部中间图片容器 */
+    .bottom-img-container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+      margin-top: 10px;
+      /* 适配小屏幕 */
+      overflow: hidden;
+    }
+    .china-img {
+      max-width: 100%;
+      max-height: 400px; /* 限制图片最大高度，可自行调整 */
+      object-fit: contain;
+      border-radius: 8px;
+      /* 适配小屏幕 */
+      max-height: clamp(200px, 50vw, 400px);
+    }
+
+    /* 竖屏布局优化 */
+    @media screen and (max-width: 992px) {
+      .main-content {
+        flex-direction: column;
+        align-items: center;
+      }
+      .left-panel, .right-panel {
+        width: 100%;
+        height: 300px;
+      }
+      .map-container {
+        width: 100%;
+        height: 500px;
+      }
+    }
+
+    @media screen and (max-width: 576px) {
+      .map-container {
+        height: 400px;
+      }
+      .left-panel, .right-panel {
+        height: 250px;
+      }
+    }
+
+    /* 模式标题和退出按钮 */
+    .mode-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .mode-title {
+      font-size: 28px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    .exit-btn {
+      padding: 10px 20px;
+      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #606266;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    
+    .exit-btn:hover {
+      background: #4e5969;
+    }
+
+    /* 成就动画样式 */
+    .achievement-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      display: none;
+    }
+
+    .achievement-popup {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      animation: achievementPopup 3s ease-in-out forwards;
+      min-width: 300px;
+      border: 4px solid #c8102e;
+    }
+
+    .achievement-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
+      animation: achievementBounce 1s ease-in-out 0.5s;
+    }
+
+    .achievement-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+      animation: achievementFadeIn 1s ease-in-out 1s both;
+    }
+
+    .achievement-desc {
+      font-size: 16px;
+      color: #666;
+      margin-bottom: 20px;
+      animation: achievementFadeIn 1s ease-in-out 1.2s both;
+    }
+
+    @keyframes achievementPopup {
+      0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+      20% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+      30% { transform: translate(-50%, -50%) scale(0.95); }
+      40% { transform: translate(-50%, -50%) scale(1); }
+      80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
+
+    @keyframes achievementBounce {
+      0%, 20%, 53%, 80%, 100% {
+        transform: translate3d(0,0,0);
+      }
+      40%, 43% {
+        transform: translate3d(0, -30px, 0);
+      }
+      70% {
+        transform: translate3d(0, -15px, 0);
+      }
+      90% {
+        transform: translate3d(0,-4px,0);
+      }
+    }
+
+    @keyframes achievementFadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 答题进度条样式 */
+    .progress-container {
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .progress-title {
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .progress-text {
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .progress-bar-wrapper {
+      width: 100%;
+      height: 30px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #4caf50, #8bc34a, #cddc39);
+      background-size: 200% 100%;
+      border-radius: 15px;
+      transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: progressShine 2s ease-in-out infinite;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-bar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: progressGlow 1.5s ease-in-out infinite;
+    }
+
+    @keyframes progressShine {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    @keyframes progressGlow {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+
+    /* 进度条完成动画 */
+    .progress-bar.complete {
+      background: linear-gradient(90deg, #ffd700, #ffec8b, #ffd700);
+      animation: completePulse 0.5s ease-in-out 3;
+    }
+
+    @keyframes completePulse {
+      0%, 100% { transform: scaleX(1); }
+      50% { transform: scaleX(1.02); }
+    }
+  </style>
+
+</head>
+<body>
+  <div class="container">
+    <!-- 模式标题和退出按钮 -->
+    <div class="mode-header">
+      <h2 class="mode-title">省份拼图</h2>
+      <button class="exit-btn" onclick="location.href='puzzle-select.html'">返回选择</button>
+    </div>
+
+    <!-- 顶部输入区 -->
+    <div class="input-area">
+      <input 
+        type="text" 
+        id="provinceInput" 
+        placeholder="请输入省级行政区完整名称（回车确认）"
+        autocomplete="off"
+      >
+      <button id="resetBtn" class="reset-btn">重置</button>
+      <div class="error-tip" id="errorTip"></div>
+    </div>
+
+    <!-- 答题进度条 -->
+    <div class="progress-container">
+      <div class="progress-header">
+        <span class="progress-title">🎯 答题进度</span>
+        <span class="progress-text" id="progressText">0 / 0</span>
+      </div>
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+    </div>
+
+    <!-- 主体布局：左-中-右 -->
+    <div class="main-content">
+      <!-- 左侧：省份介绍 -->
+      <div class="left-panel">
+        <h3>省份介绍</h3>
+        <div id="wikiContent" class="wiki-content"></div>
+      </div>
+
+      <!-- 中间:地图容器 -->
+      <div class="map-container" id="mapContainer">
+      </div>
+
+      <!-- 右侧：已答对省份列表 -->
+      <div class="right-panel">
+        <h3>已答对省份</h3>
+        <ul id="correctList"></ul>
+        <div class="error-count">
+          错误次数：<span id="errorCount">0</span>
+        </div>
+        <!-- 地图控制按钮 -->
+        <div class="map-controls">
+          
+          <div class="direction-controls">
+            <div class="horizontal-controls">
+              <button id="zoomIn" class="control-btn">+</button>
+              <button id="zoomOut" class="control-btn">-</button>
+            </div>
+            <div class="horizontal-controls">
+              <button id="moveUp" class="control-btn">↑</button> 
+              <button id="moveDown" class="control-btn">↓</button>
+            </div>
+            <div class="horizontal-controls">
+              <button id="moveLeft" class="control-btn">←</button>
+              <button id="moveRight" class="control-btn">→</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部中间图片容器 -->
+    <div class="bottom-img-container">
+        <img src="images/china.jpg" alt="中国一点也不能少" class="china-img">
+      </div>
+    </div>
+
+    <!-- 成就动画容器 -->
+    <div class="achievement-animation" id="achievementAnimation"></div>
+
+  <script>
+    // 省份名称与SVG id的映射
+    const provinceMap = {
+      "北京市": "beijing",
+      "天津市": "tianjin",
+      "河北省": "hebei",
+      "山西省": "shanxi",
+      "内蒙古自治区": "neimenggu",
+      "辽宁省": "liaoning",
+      "吉林省": "jilin",
+      "黑龙江省": "heilongjiang",
+      "上海市": "shanghai",
+      "江苏省": "jiangsu",
+      "浙江省": "zhejiang",
+      "安徽省": "anhui",
+      "福建省": "fujian",
+      "江西省": "jiangxi",
+      "山东省": "shandong",
+      "河南省": "henan",
+      "湖北省": "hubei",
+      "湖南省": "hunan",
+      "广东省": "guangdong",
+      "广西壮族自治区": "guangxi",
+      "海南省": "hainan",
+      "重庆市": "chongqing",
+      "四川省": "sichuan",
+      "贵州省": "guizhou",
+      "云南省": "yunnan",
+      "西藏自治区": "xizang",
+      "陕西省": "shaanxi",
+      "甘肃省": "gansu",
+      "青海省": "qinghai",
+      "宁夏回族自治区": "ningxia",
+      "新疆维吾尔自治区": "xinjiang",
+      "香港特别行政区": "xianggang",
+      "澳门特别行政区": "aomen",
+      "台湾省": "taiwan"
+    };
+
+    // 省份数据：从JSON文件加载
+    let provinceData = {};
+    
+    // 加载省份数据
+    async function loadProvinceData() {
+      try {
+        const response = await fetch('province-data.json');
+        provinceData = await response.json();
+        console.log('省份数据加载成功');
+      } catch (error) {
+        console.error('加载省份数据失败:', error);
+        // 使用默认数据
+        provinceData = {
+          "北京市": { code: "110000", plate: "京", population: "2189.3万", area: "1.64万 km²", gdp: "4.16万亿元", districts: "16个区", intro: "首都，全国政治、文化中心" }
+        };
+      }
+    }
+
+    // 全局状态
+    let guessed = new Set(); 
+    let errorCount = 0;
+    let zoomScale = 1; // 缩放比例
+    const zoomStep = 0.1; // 缩放步长
+    const maxZoom = 2; // 最大缩放
+    const minZoom = 0.5; // 最小缩放
+    const totalProvinceCount = Object.keys(provinceMap).length;
+    let mapX = 0; // 地图X轴平移位置
+    let mapY = 0; // 地图Y轴平移位置
+    const moveStep = 50; // 移动步长
+
+    // DOM元素获取
+    const input = document.getElementById("provinceInput");
+    const errorTip = document.getElementById("errorTip");
+    const correctList = document.getElementById("correctList");
+    const errorCountEl = document.getElementById("errorCount");
+    const mapContainer = document.getElementById("mapContainer");
+    const wikiContent = document.getElementById("wikiContent"); 
+    const zoomInBtn = document.getElementById("zoomIn");
+    const zoomOutBtn = document.getElementById("zoomOut");
+    const resetBtn = document.getElementById("resetBtn");
+    const progressBar = document.getElementById("progressBar");
+    const progressText = document.getElementById("progressText");
+
+    // 更新进度条函数
+    function updateProgress() {
+      const progress = (guessed.size / totalProvinceCount) * 100;
+      progressBar.style.width = `${progress}%`;
+      progressText.textContent = `${guessed.size} / ${totalProvinceCount}`;
+      
+      // 检查是否完成
+      if (guessed.size === totalProvinceCount) {
+        progressBar.classList.add('complete');
+      } else {
+        progressBar.classList.remove('complete');
+      }
+    }
+
+    // 创建胜利提示元素
+    function createVictoryTip() {
+      const victoryEl = document.createElement('div');
+      victoryEl.id = 'victoryTip';
+      victoryEl.style.position = 'absolute';
+      victoryEl.style.top = '50%';
+      victoryEl.style.left = '50%';
+      victoryEl.style.transform = 'translate(-50%, -50%)';
+      victoryEl.style.fontSize = '36px';
+      victoryEl.style.fontWeight = 'bold';
+      victoryEl.style.color = '#c8102e';
+      victoryEl.style.textAlign = 'center';
+      victoryEl.style.textShadow = '2px 2px 4px rgba(0,0,0,0.3)';
+      victoryEl.style.zIndex = '999';
+      victoryEl.style.whiteSpace = 'pre-line';
+      victoryEl.style.background = 'rgba(255,255,255,0.9)';
+      victoryEl.style.padding = '30px 50px';
+      victoryEl.style.borderRadius = '10px';
+      victoryEl.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
+      victoryEl.textContent = '看地图\n记地名\n祖国就在我心中';
+      return victoryEl;
+    }
+
+    // 检查是否全部答对
+    function checkAllGuessed() {
+      if (guessed.size === totalProvinceCount) {
+        // 移除已存在的胜利提示
+        const oldVictory = document.getElementById('victoryTip');
+        if (oldVictory) oldVictory.remove();
+        // 添加新的胜利提示
+        mapContainer.appendChild(createVictoryTip());
+      }
+    }
+
+    // 加载SVG地图
+    async function loadMap() {
+      try {
+        const response = await fetch('assets/PRC_province.svg');
+        const svgText = await response.text();
+        mapContainer.innerHTML = svgText;
+        // 给SVG添加id
+        const svgElement = mapContainer.querySelector('svg');
+        if (svgElement) {
+          svgElement.id = 'chinaMap';
+        }
+        // 给省份添加class
+        document.querySelectorAll('svg path').forEach(path => {
+          if (path.id) path.classList.add('province');
+        });
+        // 调整地图大小
+        resizeMap();
+      } catch (err) {
+        console.error('地图加载失败:', err);
+        wikiContent.innerHTML = '<div class="empty-tip">输入正确答案，获取省份介绍</div>';
+      }
+    }
+
+    // 获取省份介绍
+    function getProvinceIntro(provinceName) {
+      const data = provinceData[provinceName];
+      if (data) {
+        return `
+          <h4>${provinceName}</h4>
+          <table class="info-table">
+            <tr><td>行政区划代码</td><td>${data.code}</td></tr>
+            <tr><td>车牌代码</td><td>${data.plate}</td></tr>
+            <tr><td>人口</td><td>${data.population}</td></tr>
+            <tr><td>面积</td><td>${data.area}</td></tr>
+            <tr><td>GDP</td><td>${data.gdp}</td></tr>
+            <tr><td>下辖区县</td><td>${data.districts}</td></tr>
+          </table>
+          <p>${data.intro}</p>
+        `;
+      }
+      return `<h4>${provinceName}</h4><p>暂无${provinceName}的相关介绍信息</p>`;
+    }
+
+    // 显示省份介绍
+    function showProvinceIntro(provinceName) {
+      wikiContent.innerHTML = getProvinceIntro(provinceName);
+      // 滚动到顶部，方便查看
+      wikiContent.scrollTop = 0;
+    }
+
+    // 回车监听
+    input.addEventListener('keyup', (e) => {
+      if (e.key !== 'Enter') return;
+      const inputVal = input.value.trim();
+      input.value = '';
+      errorTip.textContent = '';
+
+      // 处理关键词
+      if (inputVal === "不知道") {
+        showTip('加油', 'success');
+        return;
+      }
+      
+      // 空输入校验
+      if (!inputVal) {
+        showTip('请输入省份/直辖市/自治区名称', 'error');
+        return;
+      }
+
+      // 有效性校验
+      if (!provinceMap[inputVal]) {
+        errorCount++;
+        errorCountEl.textContent = errorCount;
+        showTip('❌ 加油！再想想～', 'error');
+        return;
+      }
+
+      // 重复校验
+      if (guessed.has(inputVal)) {
+        showTip('✅ 该省份已答过', 'success');
+        showProvinceIntro(inputVal);
+        return;
+      }
+
+      // 答对逻辑
+      guessed.add(inputVal);
+      showTip('✅ 回答正确', 'success');
+      // 发送省份统计
+      sendProvinceStats(inputVal);
+      // 记录答题结果
+      recordAnswerToServer(true);
+      // 地图省份变色
+      const provinceId = provinceMap[inputVal];
+      const provinceEl = document.getElementById(provinceId);
+      if (provinceEl) {
+        provinceEl.classList.add('active');
+      }
+      // 添加到右侧列表
+      const li = document.createElement('li');
+      li.textContent = inputVal;
+      li.addEventListener('click', () => showProvinceIntro(inputVal));
+      correctList.appendChild(li);
+      // 显示省份介绍
+      showProvinceIntro(inputVal);
+      // 检查成就
+      checkAchievements();
+      // 更新进度条
+      updateProgress();
+      // 检查是否全部答对
+      checkAllGuessed();
+    });
+
+    // 提示工具
+    function showTip(text, type) {
+      errorTip.textContent = text;
+      errorTip.style.color = type === 'error' ? '#f56c6c' : '#67c23a';
+    }
+
+    // 重置游戏功能
+    function resetGame() {
+      // 重置全局状态
+      guessed = new Set();
+      errorCount = 0;
+      zoomScale = 1;
+      mapX = 0; // 重置地图X轴平移位置
+      mapY = 0; // 重置地图Y轴平移位置
+      
+      // 重置DOM显示
+      errorCountEl.textContent = '0';
+      errorTip.textContent = '';
+      correctList.innerHTML = '';
+      wikiContent.innerHTML = '<div class="empty-tip">请输入并答对省份名称<br>查看详细省份介绍</div>';
+      
+      // 重置地图样式
+      const chinaMap = document.getElementById("chinaMap");
+      if (chinaMap) {
+        resizeMap(); // 调用resizeMap恢复默认状态
+      }
+      
+      // 重置省份颜色（确保移除所有active类）- 使用更通用的选择器
+      const provinces = document.querySelectorAll('svg path');
+      provinces.forEach(path => {
+        if (path.id) {
+          path.classList.remove('active');
+        }
+      });
+      
+      // 移除胜利提示
+      const victoryTip = document.getElementById('victoryTip');
+      if (victoryTip) {
+        victoryTip.remove();
+      }
+      
+      // 聚焦输入框
+      input.focus();
+      // 更新进度条
+      updateProgress();
+      showTip('🔄 已重置，重新开始吧！', 'success');
+    }
+
+    // 调整地图大小以适应容器
+    function resizeMap() {
+      const chinaMap = document.getElementById("chinaMap");
+      if (!chinaMap) return;
+      
+      const mapContainer = document.getElementById("mapContainer");
+      // 使用offsetWidth和offsetHeight以获取实际显示尺寸
+      const containerWidth = mapContainer.offsetWidth - 40; // 减去padding
+      const containerHeight = mapContainer.offsetHeight - 40; // 减去padding
+      
+      // 获取SVG的实际宽高
+      const svgWidth = 878; // SVG原始宽度
+      const svgHeight = 434; // SVG原始高度
+      const mapRatio = svgWidth / svgHeight; // SVG原始宽高比
+      const containerRatio = containerWidth / containerHeight;
+      
+      let scale;
+      if (containerRatio > mapRatio) {
+        // 容器更宽，以高度为基准
+        scale = containerHeight / svgHeight;
+      } else {
+        // 容器更高，以宽度为基准
+        scale = containerWidth / svgWidth;
+      }
+      
+      // 确保地图始终在容器中央，并且不会被遮挡
+      chinaMap.style.width = `${svgWidth}px`;
+      chinaMap.style.height = `${svgHeight}px`;
+      chinaMap.style.transform = `translate(-50%, -50%) scale(${zoomScale * scale}) translate(${mapX}px, ${mapY}px)`;
+      chinaMap.style.transformOrigin = 'center center';
+      chinaMap.style.position = 'absolute';
+      chinaMap.style.left = '50%';
+      chinaMap.style.top = '50%';
+      chinaMap.style.margin = '0';
+    }
+
+    // 放大地图
+    function zoomIn() {
+      if (zoomScale < maxZoom) {
+        zoomScale += zoomStep;
+        resizeMap();
+      }
+    }
+
+    // 缩小地图
+    function zoomOut() {
+      if (zoomScale > minZoom) {
+        zoomScale -= zoomStep;
+        resizeMap();
+      }
+    }
+
+    // 移动地图
+    function moveMap(dx, dy) {
+      mapX += dx;
+      mapY += dy;
+      resizeMap();
+    }
+
+    // 页面初始化
+    window.addEventListener('DOMContentLoaded', () => {
+      loadMap();
+      // 初始化进度条
+      updateProgress();
+      
+      // 绑定缩放按钮事件
+      const zoomInBtn = document.getElementById('zoomIn');
+      const zoomOutBtn = document.getElementById('zoomOut');
+      if (zoomInBtn) zoomInBtn.addEventListener('click', zoomIn);
+      if (zoomOutBtn) zoomOutBtn.addEventListener('click', zoomOut);
+      
+      // 绑定方向按钮事件
+      const moveUpBtn = document.getElementById('moveUp');
+      const moveDownBtn = document.getElementById('moveDown');
+      const moveLeftBtn = document.getElementById('moveLeft');
+      const moveRightBtn = document.getElementById('moveRight');
+      
+      if (moveUpBtn) moveUpBtn.addEventListener('click', () => moveMap(0, -moveStep));
+      if (moveDownBtn) moveDownBtn.addEventListener('click', () => moveMap(0, moveStep));
+      if (moveLeftBtn) moveLeftBtn.addEventListener('click', () => moveMap(-moveStep, 0));
+      if (moveRightBtn) moveRightBtn.addEventListener('click', () => moveMap(moveStep, 0));
+      
+      // 绑定窗口大小变化事件
+      window.addEventListener('resize', resizeMap);
+      
+      // 初始调整地图大小
+      setTimeout(resizeMap, 100);
+    });
+  </script>
+  <script>
+    // 拼图模式特定配置
+    let startTime = null;
+    let consecutiveCorrect = 0;
+    let achievements = new Set();
+    
+    // 显示成就动画
+    function showAchievementAnimation(title, description, icon = '🏆') {
+      const animationContainer = document.getElementById('achievementAnimation');
+      animationContainer.style.display = 'block';
+      
+      const popup = document.createElement('div');
+      popup.className = 'achievement-popup';
+      popup.innerHTML = `
+        <div class="achievement-icon">${icon}</div>
+        <div class="achievement-title">🎉 ${title}</div>
+        <div class="achievement-desc">${description}</div>
+      `;
+      
+      animationContainer.appendChild(popup);
+      
+      setTimeout(() => {
+        popup.remove();
+        if (animationContainer.children.length === 0) {
+          animationContainer.style.display = 'none';
+        }
+      }, 3000);
+    }
+
+    // 显示成就提示
+    function showAchievement(achievement) {
+      if (achievements.has(achievement)) return;
+      
+      achievements.add(achievement);
+      
+      // 保存成就到localStorage
+      const savedAchievements = JSON.parse(localStorage.getItem('mapQuizAchievements') || '{}');
+      
+      // 根据成就名称映射到对应的存储键
+      let achievementKey;
+      let description;
+      let icon = '🏆';
+      
+      switch(achievement) {
+        case '初级地理学家':
+          achievementKey = 'puzzle-beginner';
+          description = '答对10题，你已经掌握了基本的中国地理知识！';
+          break;
+        case '中级地理学家':
+          achievementKey = 'puzzle-intermediate';
+          description = '答对20题，你对中国地理有了更深入的了解！';
+          break;
+        case '高级地理学家':
+          achievementKey = 'puzzle-expert';
+          description = '全部答对！你是真正的地理大师！';
+          break;
+        case '拼图速度大师':
+          achievementKey = 'puzzle-speed';
+          description = '3分钟内完成拼图，你的速度真快！';
+          icon = '⚡';
+          break;
+      }
+      
+      if (achievementKey) {
+        savedAchievements[achievementKey] = true;
+        localStorage.setItem('mapQuizAchievements', JSON.stringify(savedAchievements));
+      }
+      
+      // 显示成就动画
+      showAchievementAnimation(achievement, description, icon);
+      
+      const errorTip = document.getElementById('errorTip');
+      errorTip.textContent = `🏆 恭喜获得成就：${achievement}`;
+      errorTip.style.color = '#67c23a';
+      errorTip.style.fontSize = '16px';
+      errorTip.style.fontWeight = 'bold';
+      
+      // 3秒后恢复
+      setTimeout(() => {
+        errorTip.textContent = '';
+      }, 3000);
+    }
+    
+    // 检查成就
+    function checkAchievements() {
+      const correctCount = guessed.size;
+      
+      // 初级地理学家
+      if (correctCount >= 10 && !achievements.has('初级地理学家')) {
+        showAchievement('初级地理学家');
+      }
+      
+      // 中级地理学家
+      if (correctCount >= 20 && !achievements.has('中级地理学家')) {
+        showAchievement('中级地理学家');
+      }
+      
+      // 高级地理学家
+      if (correctCount >= totalProvinceCount && !achievements.has('高级地理学家')) {
+        showAchievement('高级地理学家');
+        
+        // 检查速度大师
+        if (startTime) {
+          const endTime = new Date();
+          const timeTaken = (endTime - startTime) / 1000 / 60; // 转换为分钟
+          if (timeTaken <= 3 && !achievements.has('拼图速度大师')) {
+            showAchievement('拼图速度大师');
+          }
+        }
+      }
+    }
+    
+    document.addEventListener('DOMContentLoaded', async function() {
+      // 加载省份数据
+      await loadProvinceData();
+      
+      // 初始化时显示提示
+      const wikiContent = document.getElementById('wikiContent');
+      wikiContent.innerHTML = '<div class="empty-tip">请输入并答对省份名称<br>查看详细省份介绍</div>';
+      
+      // 重写回车监听，添加成就检查
+      const originalInputListener = input.onkeyup;
+      input.onkeyup = function(e) {
+        if (e.key !== 'Enter') return;
+        
+        const inputVal = this.value.trim();
+        this.value = '';
+        errorTip.textContent = '';
+
+        // 处理关键词
+        if (inputVal === "不知道") {
+          showTip('加油', 'success');
+          return;
+        }
+        
+        // 空输入校验
+        if (!inputVal) {
+          showTip('请输入省份/直辖市/自治区名称', 'error');
+          return;
+        }
+
+        // 有效性校验
+        if (!provinceMap[inputVal]) {
+          errorCount++;
+          errorCountEl.textContent = errorCount;
+          showTip('❌ 加油！再想想～', 'error');
+          consecutiveCorrect = 0;
+          return;
+        }
+
+        // 重复校验
+        if (guessed.has(inputVal)) {
+          showTip('✅ 该省份已答过', 'success');
+          showProvinceIntro(inputVal);
+          return;
+        }
+
+        // 答对逻辑
+        guessed.add(inputVal);
+        showTip('✅ 回答正确', 'success');
+        consecutiveCorrect++;
+        
+        // 保存统计数据
+        savePuzzleStats(guessed.size);
+        
+        // 开始计时（如果是第一题）
+        if (guessed.size === 1) {
+          startTime = new Date();
+        }
+        
+        // 地图省份变色
+        const provinceId = provinceMap[inputVal];
+        const provinceEl = document.getElementById(provinceId);
+        if (provinceEl) {
+          provinceEl.classList.add('active');
+        }
+        
+        // 添加到右侧列表
+        const li = document.createElement('li');
+        li.textContent = inputVal;
+        li.addEventListener('click', () => showProvinceIntro(inputVal));
+        correctList.appendChild(li);
+        
+        // 显示省份介绍
+        showProvinceIntro(inputVal);
+        
+        // 检查成就
+        checkAchievements();
+        
+        // 检查是否全部答对
+        checkAllGuessed();
+      };
+      
+      // 重置游戏时重置成就相关变量
+      const originalResetGame = resetGame;
+      resetGame = function() {
+        originalResetGame();
+        startTime = null;
+        consecutiveCorrect = 0;
+        achievements.clear();
+      };
+    });
+
+    // 发送省份统计数据到服务器
+    async function sendProvinceStats(provinceName) {
+      try {
+        await fetch('/api/puzzle-stats', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'province', name: provinceName })
+        });
+      } catch (error) {
+        console.error('发送省份统计失败:', error);
+      }
+    }
+
+    // 记录答题结果到服务器
+    async function recordAnswerToServer(correct) {
+      try {
+        const userId = getUserId();
+        const mode = 'province-puzzle';
+        await fetch('/api/record-answer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId, correct, mode })
+        });
+      } catch (error) {
+        console.error('记录答题结果失败:', error);
+      }
+    }
+
+    // 获取用户ID
+    function getUserId() {
+      const isAdmin = sessionStorage.getItem('chinaMapAdmin') === 'true';
+      if (isAdmin) return 'admin';
+      const username = localStorage.getItem('chinaMapUsername');
+      if (username) {
+        return username;
+      }
+      return 'guest';
+    }
+
+    // 保存拼图统计数据到服务器
+    async function savePuzzleStats(correctCount) {
+      const userId = getUserId();
+      if (userId === 'guest') return;
+      
+      try {
+        await fetch('/api/save-achievement', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: userId,
+            achievements: {},
+            stats: {
+              puzzleProvinceCorrect: correctCount,
+              puzzleProvinceStreak: consecutiveCorrect
+            }
+          })
+        });
+      } catch (error) {
+        console.error('保存拼图统计数据失败:', error);
+      }
+    }
+
+    // 禁用 F12
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I') || (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+        alert('开发者工具已禁用');
+      }
+    });
+
+    // 禁用右键菜单
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      alert('右键菜单已禁用');
+    });
+  </script>
+
+  <!-- 备案号 -->
+  <div style="text-align: center; padding: 20px; font-size: 12px; color: #999;">
+    <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" style="color: #999; text-decoration: none;">
+      京 ICP 备 30177588458417371 号
+    </a>
+  </div>
+</body>
+</html>
