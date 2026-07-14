@@ -1,6 +1,7 @@
-
-
 # InteractiveChinaMap
+
+*这是EddieDuan的第一个自建仓库。首次与HTML和git终端博弈，bug肯定是有的。如果你能在2026.7.14前看到的话，可以访问www.interactivecnmap.cn，我在那里解析到的服务器配置了后端。*
+~快来拿GPA4.0吧！~
 
 ## 项目简介
 
